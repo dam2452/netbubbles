@@ -52,6 +52,7 @@ def add_legend(
     *,
     vertical: bool = False,
     fontsize: float = 15.0,
+    legend_x: float = 0.80,
 ) -> None:
     """Add a color legend to *fig*."""
     handles = [
@@ -63,7 +64,7 @@ def add_legend(
     if vertical:
         fig.legend(
             handles=handles, loc="center left", ncol=1,
-            fontsize=fontsize, frameon=False, bbox_to_anchor=(0.80, 0.5),
+            fontsize=fontsize, frameon=False, bbox_to_anchor=(legend_x, 0.5),
         )
     else:
         fig.legend(

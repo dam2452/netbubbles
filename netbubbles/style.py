@@ -50,6 +50,7 @@ class Style:
     axis_margin: float = 1.1
     background_color: str = "#F0F4FA"
     background_circles: Optional[List[Tuple[float, float, float, str]]] = None
+    fit_background_circles: bool = False
     ax_facecolor: Optional[str] = None
 
     # ── Text ─────────────────────────────────────────────────────

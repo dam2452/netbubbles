@@ -376,9 +376,13 @@ def _finalize_axes(
         ax.set_xlim(-4, 4)
         ax.set_ylim(-4, 4)
     else:
-        lim = max(
-            max(abs(x), abs(y)) for x, y in pos.values()
-        ) + style.axis_margin
+        node_lim = max(max(abs(x), abs(y)) for x, y in pos.values())
+        bg_lim = (
+            max((abs(cy) + r for _, cy, r, _ in style.background_circles), default=0.0)
+            if style.fit_background_circles and style.background_circles
+            else 0.0
+        )
+        lim = max(node_lim, bg_lim) + style.axis_margin
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
     ax.axis("off")

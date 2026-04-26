@@ -74,7 +74,7 @@ def add_legend(
         _ncol = ncol if ncol is not None else min(len(handles), 6)
         fig.legend(
             handles=handles, loc="lower center", ncol=_ncol,
-            fontsize=fontsize, frameon=False, bbox_to_anchor=(0.5, -0.04),
+            fontsize=fontsize, frameon=False, bbox_to_anchor=(0.5, 0.01),
         )
 
 
@@ -384,14 +384,8 @@ def _draw_title(
     style: Style,
 ) -> None:
     if title:
+        full = f"{title}\n{subtitle}" if subtitle else title
         ax.set_title(
-            title, fontsize=style.title_fontsize,
+            full, fontsize=style.title_fontsize,
             fontweight="bold", pad=style.title_pad,
-        )
-    if subtitle:
-        ax.annotate(
-            subtitle, xy=(0.5, 1.0), xycoords="axes fraction",
-            xytext=(0, style.title_pad - 2), textcoords="offset points",
-            ha="center", va="bottom",
-            fontsize=style.title_fontsize * 0.55, fontweight="normal",
         )

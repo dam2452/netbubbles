@@ -161,7 +161,7 @@ def _draw_nodes(
         if node.label_position == "center":
             text_obj = ax.text(
                 x, y, label, ha="center", va="center",
-                fontsize=style.center_label_fontsize,
+                fontsize=node.label_fontsize if node.label_fontsize is not None else style.center_label_fontsize,
                 fontweight="bold", color=style.center_label_color, zorder=10,
             )
             if style.label_stroke_color is not None:
@@ -169,7 +169,7 @@ def _draw_nodes(
                     mpe.withStroke(linewidth=style.label_stroke_width, foreground=style.label_stroke_color),
                 ])
         else:
-            _draw_outer_label(ax, x, y, node.radius, label, style)
+            _draw_outer_label(ax, x, y, node.radius, label, style, fontsize=node.label_fontsize)
 
 
 # ── Edges ────────────────────────────────────────────────────────

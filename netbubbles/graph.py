@@ -14,6 +14,7 @@ class Node:
     radius: float = 0.46
     label: Optional[str] = None
     label_position: str = "outer"
+    label_fontsize: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -156,6 +157,7 @@ class BubbleGraph:
                 radius=node.radius,
                 label=node.label,
                 label_position=node.label_position,
+                label_fontsize=node.label_fontsize,
                 metadata=node.metadata,
             )
         for (src, tgt), w in agg.items():
@@ -169,7 +171,8 @@ class BubbleGraph:
             if n in self._nodes:
                 nd = self._nodes[n]
                 g.add_node(n, color=nd.color, radius=nd.radius, label=nd.label,
-                           label_position=nd.label_position, metadata=nd.metadata)
+                           label_position=nd.label_position, label_fontsize=nd.label_fontsize,
+                           metadata=nd.metadata)
         for e in self._edges:
             if e.source in keep and e.target in keep:
                 g.add_edge(e.source, e.target, weight=e.weight, color=e.color,
@@ -180,7 +183,8 @@ class BubbleGraph:
         g = BubbleGraph()
         for name, node in self._nodes.items():
             g.add_node(name, color=node.color, radius=node.radius, label=node.label,
-                       label_position=node.label_position, metadata=node.metadata)
+                       label_position=node.label_position, label_fontsize=node.label_fontsize,
+                       metadata=node.metadata)
         for e in self._edges:
             if predicate(e):
                 g.add_edge(e.source, e.target, weight=e.weight, color=e.color,

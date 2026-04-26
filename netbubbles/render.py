@@ -389,8 +389,9 @@ def _draw_title(
             fontweight="bold", pad=style.title_pad,
         )
     if subtitle:
-        ax.text(
-            0.5, -0.02, subtitle,
-            transform=ax.transAxes, ha="center", va="top",
-            fontsize=style.title_fontsize / 2, fontweight="normal",
+        ax.annotate(
+            subtitle, xy=(0.5, 1.0), xycoords="axes fraction",
+            xytext=(0, style.title_pad - 2), textcoords="offset points",
+            ha="center", va="bottom",
+            fontsize=style.title_fontsize * 0.55, fontweight="normal",
         )

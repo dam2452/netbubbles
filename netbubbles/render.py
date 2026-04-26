@@ -56,6 +56,7 @@ def add_legend(
     vertical: bool = False,
     fontsize: float = 15.0,
     legend_x: float = 0.80,
+    ncol: Optional[int] = None,
 ) -> None:
     """Add a color legend to *fig*."""
     handles = [
@@ -70,8 +71,9 @@ def add_legend(
             fontsize=fontsize, frameon=False, bbox_to_anchor=(legend_x, 0.5),
         )
     else:
+        _ncol = ncol if ncol is not None else min(len(handles), 6)
         fig.legend(
-            handles=handles, loc="lower center", ncol=min(len(handles), 6),
+            handles=handles, loc="lower center", ncol=_ncol,
             fontsize=fontsize, frameon=False, bbox_to_anchor=(0.5, -0.04),
         )
 
@@ -388,7 +390,7 @@ def _draw_title(
         )
     if subtitle:
         ax.text(
-            0.5, 1.01, subtitle,
-            transform=ax.transAxes, ha="center", va="bottom",
+            0.5, -0.02, subtitle,
+            transform=ax.transAxes, ha="center", va="top",
             fontsize=style.title_fontsize / 2, fontweight="normal",
         )

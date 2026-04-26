@@ -295,8 +295,13 @@ def _draw_arrow(
     ctrl = ((start[0] + end[0]) / 2 + px * style.curve_strength * dist,
             (start[1] + end[1]) / 2 + py * style.curve_strength * dist)
 
+    ex, ey = end[0] - ctrl[0], end[1] - ctrl[1]
+    ed = np.sqrt(ex ** 2 + ey ** 2) + 1e-9
+    line_end = (end[0] - ex / ed * style.arrowhead_length,
+                end[1] - ey / ed * style.arrowhead_length)
+
     ax.add_patch(mpatches.PathPatch(
-        MplPath([start, ctrl, end], [MplPath.MOVETO, MplPath.CURVE3, MplPath.CURVE3]),
+        MplPath([start, ctrl, line_end], [MplPath.MOVETO, MplPath.CURVE3, MplPath.CURVE3]),
         facecolor="none", edgecolor=color, lw=lw, alpha=alpha, zorder=1,
     ))
     _draw_arrowhead(ax, end, ctrl, color, alpha, style)

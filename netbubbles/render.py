@@ -375,7 +375,7 @@ def _finalize_axes(
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
     ax.axis("off")
-    ax.set_aspect("equal", adjustable="datalim")
+    ax.set_aspect("equal")
 
 
 def _draw_title(

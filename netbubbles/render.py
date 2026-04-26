@@ -44,8 +44,9 @@ def draw(
         _draw_background(ax, pos, style)
     _draw_edges(ax, graph, pos, style, constrain_angles)
     _draw_nodes(ax, graph, pos, style)
+    content_top = _compute_content_top(pos, style)
     _finalize_axes(ax, pos, style)
-    _draw_title(ax, title, subtitle, style)
+    _draw_title(ax, title, subtitle, style, content_top)
     return ax
 
 
@@ -384,27 +385,38 @@ def _finalize_axes(
     ax.set_aspect("equal")
 
 
+def _compute_content_top(
+    pos: Dict[str, Tuple[float, float]],
+    style: Style,
+) -> float:
+    if style.background_circles:
+        return max(cy + r for _, cy, r, _ in style.background_circles)
+    if pos:
+        return max(abs(y) for _, y in pos.values())
+    return 1.0
+
+
 def _draw_title(
     ax: plt.Axes,
     title: str, subtitle: str,
     style: Style,
+    content_top: float,
 ) -> None:
-    dpi_trans = ax.figure.dpi_scale_trans
     subtitle_fs = style.title_fontsize * style.subtitle_fontsize_ratio
-    sub_pt = style.subtitle_pad
-    title_pt = sub_pt + subtitle_fs + 1.0 if subtitle else style.title_pad
+    sub_y = content_top + style.subtitle_pad
 
     if subtitle:
-        sub_trans = ax.transAxes + ScaledTranslation(0, sub_pt / 72, dpi_trans)
         ax.text(
-            0.5, 1.0, subtitle, transform=sub_trans,
+            0.0, sub_y, subtitle,
             ha="center", va="bottom", clip_on=False,
             fontsize=subtitle_fs, fontweight="normal",
+            transform=ax.transData,
         )
     if title:
-        title_trans = ax.transAxes + ScaledTranslation(0, title_pt / 72, dpi_trans)
+        title_y = sub_y + subtitle_fs * 1.2 if subtitle else sub_y
         ax.text(
-            0.5, 1.0, title, transform=title_trans,
+            0.0, title_y, title,
             ha="center", va="bottom", clip_on=False,
             fontsize=style.title_fontsize, fontweight="bold",
+            transform=ax.transData,
         )

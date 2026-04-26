@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
+import matplotlib.patheffects as mpe
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,6 +37,8 @@ def draw(
 
     graph.positions = pos
 
+    if style.ax_facecolor is not None:
+        ax.set_facecolor(style.ax_facecolor)
     if background:
         _draw_background(ax, pos, style)
     _draw_edges(ax, graph, pos, style, constrain_angles)
@@ -128,11 +131,15 @@ def _draw_outer_label(
         ha, va = ("left" if ux > 0 else "right"), "center"
     else:
         ha, va = "center", ("bottom" if uy > 0 else "top")
-    ax.text(
+    text_obj = ax.text(
         lx, ly, label, ha=ha, va=va,
         fontsize=fontsize or style.label_fontsize,
-        fontweight="bold", zorder=10,
+        fontweight="bold", color=style.label_color, zorder=10,
     )
+    if style.label_stroke_color is not None:
+        text_obj.set_path_effects([
+            mpe.withStroke(linewidth=style.label_stroke_width, foreground=style.label_stroke_color),
+        ])
 
 
 def _draw_nodes(
@@ -148,11 +155,15 @@ def _draw_nodes(
         _draw_node_circles(ax, x, y, node.radius, node.color, style)
         label = node.display_label
         if node.label_position == "center":
-            ax.text(
+            text_obj = ax.text(
                 x, y, label, ha="center", va="center",
                 fontsize=style.center_label_fontsize,
-                fontweight="bold", color="black", zorder=10,
+                fontweight="bold", color=style.center_label_color, zorder=10,
             )
+            if style.label_stroke_color is not None:
+                text_obj.set_path_effects([
+                    mpe.withStroke(linewidth=style.label_stroke_width, foreground=style.label_stroke_color),
+                ])
         else:
             _draw_outer_label(ax, x, y, node.radius, label, style)
 

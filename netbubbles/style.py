@@ -50,11 +50,16 @@ class Style:
     axis_margin: float = 1.1
     background_color: str = "#F0F4FA"
     background_circles: Optional[List[Tuple[float, float, float, str]]] = None
+    ax_facecolor: Optional[str] = None
 
     # ── Text ─────────────────────────────────────────────────────
     label_fontsize: float = 12.0
     center_label_fontsize: float = 12.0
     label_offset: float = 0.08
+    label_color: str = "black"
+    center_label_color: str = "black"
+    label_stroke_color: Optional[str] = None
+    label_stroke_width: float = 2.5
     title_fontsize: float = 25.0
     title_pad: float = 26.0
 

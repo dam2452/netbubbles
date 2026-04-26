@@ -10,6 +10,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.path import Path as MplPath
+from matplotlib.transforms import ScaledTranslation
 
 from .graph import BubbleGraph
 from .style import Style, default_style
@@ -388,9 +389,18 @@ def _draw_title(
     title: str, subtitle: str,
     style: Style,
 ) -> None:
+    dpi_trans = ax.figure.dpi_scale_trans
     if title:
-        full = f"{title}\n{subtitle}" if subtitle else title
-        ax.set_title(
-            full, fontsize=style.title_fontsize,
-            fontweight="bold", pad=style.title_pad,
+        title_trans = ax.transAxes + ScaledTranslation(0, style.title_pad / 72, dpi_trans)
+        ax.text(
+            0.5, 1.0, title, transform=title_trans,
+            ha="center", va="bottom", clip_on=False,
+            fontsize=style.title_fontsize, fontweight="bold",
+        )
+    if subtitle:
+        sub_trans = ax.transAxes + ScaledTranslation(0, 4 / 72, dpi_trans)
+        ax.text(
+            0.5, 1.0, subtitle, transform=sub_trans,
+            ha="center", va="bottom", clip_on=False,
+            fontsize=style.title_fontsize * 0.5, fontweight="normal",
         )

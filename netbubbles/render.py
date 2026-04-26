@@ -398,7 +398,7 @@ def _draw_title(
             fontsize=style.title_fontsize, fontweight="bold",
         )
     if subtitle:
-        sub_trans = ax.transAxes + ScaledTranslation(0, 4 / 72, dpi_trans)
+        sub_trans = ax.transAxes + ScaledTranslation(0, 2 / 72, dpi_trans)
         ax.text(
             0.5, 1.0, subtitle, transform=sub_trans,
             ha="center", va="bottom", clip_on=False,

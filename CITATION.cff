@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use netbubbles in your research, please cite it as below."
+type: software
+title: netbubbles
+version: 0.2.0
+license: MIT
+abstract: >
+  A Python library for creating publication-quality bubble-graph
+  visualisations of directed weighted networks with curved arrows.
+repository-code: "https://github.com/dam2452/netbubbles"
+keywords:
+  - graph-visualization
+  - network
+  - bubble-graph
+  - matplotlib
+  - directed-graph
+preferred-citation:
+  type: software
+  authors:
+    - name: dam2452
+  title: "netbubbles: Directed bubble-graph visualisation with curved arrows"
+  year: 2025

@@ -181,3 +181,4 @@ cython_debug/
 .cursorindexingignore
 /example_output
 /example_output
+/.idea

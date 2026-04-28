@@ -1,4 +1,8 @@
-"""netbubbles — reusable bubble-graph (directed graph with circle nodes)."""
+"""netbubbles — directed bubble-graph visualisation with curved arrows.
+
+A Python library for creating publication-quality bubble-graph
+visualisations of directed weighted networks.
+"""
 
 from .graph import BubbleGraph, Edge, Node
 from .layout import bilayer, circular, focus, grid, manual

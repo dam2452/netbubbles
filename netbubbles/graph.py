@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Self, Tuple
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
 @dataclass

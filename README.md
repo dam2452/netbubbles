@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/netbubbles/"><img src="https://img.shields.io/pypi/v/netbubbles.svg" alt="PyPI"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-green.svg" alt="License"/></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"/>
 </p>
 
@@ -291,4 +291,11 @@ pytest tests/
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under **CC BY-NC-SA 4.0** — [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+- **Use it freely** — for research, education, personal projects
+- **Cite the author** — attribution required in publications and derivative works
+- **No commercial use** — you may not sell or monetize this software
+- **Share changes back** — modifications must be distributed under the same license (pull requests welcome!)
+
+See [LICENSE](LICENSE) for full details.

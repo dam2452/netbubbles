@@ -3,7 +3,7 @@ message: "If you use netbubbles in your research, please cite it as below."
 type: software
 title: netbubbles
 version: 0.2.0
-license: MIT
+license: CC-BY-NC-SA-4.0
 abstract: >
   A Python library for creating publication-quality bubble-graph
   visualisations of directed weighted networks with curved arrows.

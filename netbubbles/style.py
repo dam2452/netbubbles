@@ -40,7 +40,7 @@ class Style:
     curve_strength: float = 0.18
     arrowhead_length: float = 0.23
     arrowhead_width: float = 0.14
-    arrow_spread_rad: float = float(np.radians(15.0))
+    arrow_spread_rad: float = float(np.radians(13.0))
 
     # ── Self-loop ────────────────────────────────────────────────
     self_loop_radius_frac: float = 0.6
@@ -60,6 +60,7 @@ class Style:
     label_color: str = "black"
     center_label_color: str = "black"
     label_stroke_color: Optional[str] = None
+    arrow_tail_hugs_border: bool = False
     label_stroke_width: float = 2.5
     label_min_sep_deg: float = 18.0
     title_fontsize: float = 25.0

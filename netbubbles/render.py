@@ -336,6 +336,7 @@ def _draw_edges(
 
     regular = [e for e in top if not e.is_self_loop]
     start_ang, end_ang = _compute_spread_angles(regular, pos, constrain_angles, style)
+    bow_signs = _compute_bow_signs(regular, pos)
 
     for edge in top:
         if edge.source not in pos or edge.target not in pos:
@@ -346,7 +347,7 @@ def _draw_edges(
         lw = edge.linewidth or style.edge_linewidth(frac)
         alpha = edge.alpha or style.edge_alpha(frac)
 
-        r_src = graph.nodes[edge.source].radius + border_half
+        r_src = graph.nodes[edge.source].radius + (border_half if style.arrow_tail_hugs_border else 0.0)
         r_tgt = graph.nodes[edge.target].radius + border_half
 
         if edge.is_self_loop:
@@ -355,14 +356,19 @@ def _draw_edges(
             key = (edge.source, edge.target)
             sa = start_ang.get(key, _inward_angle(pos[edge.source]))
             ea = end_ang.get(key, _inward_angle(pos[edge.target]))
+            bow = bow_signs.get(key, 1.0)
             _draw_arrow(ax, pos[edge.source], pos[edge.target],
-                        r_src, r_tgt, sa, ea, color, lw, alpha, style)
+                        r_src, r_tgt, sa, ea, bow, color, lw, alpha, style)
 
 
 # ── Angle helpers ────────────────────────────────────────────────
 
 def _inward_angle(p: Tuple[float, float]) -> float:
     return float(np.arctan2(-p[1], -p[0]))
+
+
+def _mean_angle(angles: List[float]) -> float:
+    return float(np.arctan2(np.mean(np.sin(angles)), np.mean(np.cos(angles))))
 
 
 def _natural_angle(
@@ -388,31 +394,90 @@ def _compute_spread_angles(
 
     start: Dict[Tuple[str, str], float] = {}
     end: Dict[Tuple[str, str], float] = {}
-    spread = style.arrow_spread_rad
 
-    for node, out_edges in outgoing.items():
-        center = _inward_angle(pos[node]) if constrain else None
-        ordered = sorted(out_edges, key=lambda e: _natural_angle(pos, e[0], e[1]))
-        n = len(ordered)
-        for i, edge in enumerate(ordered):
-            if constrain:
-                offset = 0.0 if n == 1 else spread * (2 * i / (n - 1) - 1)
-                start[edge] = center + offset  # type: ignore[operator]
-            else:
-                start[edge] = _natural_angle(pos, edge[0], edge[1])
+    # seed every edge with its natural angle first
+    for e in edges:
+        if e.source in pos and e.target in pos:
+            key = (e.source, e.target)
+            start[key] = _natural_angle(pos, e.source, e.target)
+            end[key]   = _natural_angle(pos, e.target, e.source)
 
-    for node, in_edges in incoming.items():
-        center = _inward_angle(pos[node]) if constrain else None
-        ordered = sorted(in_edges, key=lambda e: _natural_angle(pos, e[1], e[0]))
-        n = len(ordered)
-        for i, edge in enumerate(ordered):
-            if constrain:
-                offset = 0.0 if n == 1 else spread * (2 * i / (n - 1) - 1)
-                end[edge] = center + offset  # type: ignore[operator]
+    if not constrain:
+        return start, end
+
+    # per node: sort ALL touching edges together by natural angle, then nudge
+    # only those that are too close — preserves natural paths, avoids heavy deflection
+    min_gap = style.arrow_spread_rad
+    all_nodes = set(outgoing) | set(incoming)
+    for node in all_nodes:
+        entries: List[Tuple[float, str, Tuple[str, str]]] = []
+        for edge in outgoing.get(node, []):
+            entries.append((_natural_angle(pos, edge[0], edge[1]), "out", edge))
+        for edge in incoming.get(node, []):
+            entries.append((_natural_angle(pos, edge[1], edge[0]), "in", edge))
+
+        if len(entries) < 2:
+            continue
+
+        entries.sort(key=lambda x: x[0])
+        adjusted = [a for a, _, _ in entries]
+
+        for _ in range(30):
+            moved = False
+            for i in range(len(adjusted) - 1):
+                gap = adjusted[i + 1] - adjusted[i]
+                if gap < min_gap:
+                    push = (min_gap - gap) / 2.0
+                    adjusted[i] -= push
+                    adjusted[i + 1] += push
+                    moved = True
+            if not moved:
+                break
+
+        for i, (_, direction, edge) in enumerate(entries):
+            if direction == "out":
+                start[edge] = adjusted[i]
             else:
-                end[edge] = _natural_angle(pos, edge[1], edge[0])
+                end[edge] = adjusted[i]
 
     return start, end
+
+
+def _compute_bow_signs(
+    edges: list,
+    pos: Dict[str, Tuple[float, float]],
+) -> Dict[Tuple[str, str], float]:
+    """Return +1 / -1 bow sign per edge to separate crossing arc pairs.
+
+    For each pair of edges whose straight-line chords cross and that share no
+    node, assign opposite bow directions so their bezier arcs diverge.
+    """
+    valid = [(e.source, e.target) for e in edges
+             if e.source in pos and e.target in pos]
+    signs: Dict[Tuple[str, str], float] = {k: 1.0 for k in valid}
+
+    def _cross2d(ox: float, oy: float, ax: float, ay: float, bx: float, by: float) -> float:
+        return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox)
+
+    def _chords_cross(a: Tuple[float, float], b: Tuple[float, float],
+                      c: Tuple[float, float], d: Tuple[float, float]) -> bool:
+        d1 = _cross2d(c[0], c[1], d[0], d[1], a[0], a[1])
+        d2 = _cross2d(c[0], c[1], d[0], d[1], b[0], b[1])
+        d3 = _cross2d(a[0], a[1], b[0], b[1], c[0], c[1])
+        d4 = _cross2d(a[0], a[1], b[0], b[1], d[0], d[1])
+        return ((d1 > 0) != (d2 > 0)) and ((d3 > 0) != (d4 > 0))
+
+    for i in range(len(valid)):
+        k1 = valid[i]
+        for j in range(i + 1, len(valid)):
+            k2 = valid[j]
+            if k1[0] in k2 or k1[1] in k2:
+                continue
+            if _chords_cross(pos[k1[0]], pos[k1[1]], pos[k2[0]], pos[k2[1]]):
+                if signs[k1] == signs[k2]:
+                    signs[k2] = -signs[k2]
+
+    return signs
 
 
 # ── Arrow / arrowhead / self-loop ────────────────────────────────
@@ -423,6 +488,7 @@ def _draw_arrow(
     p2: Tuple[float, float],
     r_start: float, r_end: float,
     start_ang: float, end_ang: float,
+    bow_sign: float,
     color: str, lw: float, alpha: float,
     style: Style,
 ) -> None:
@@ -435,8 +501,8 @@ def _draw_arrow(
     dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
     px, py = -dy / dist, dx / dist
 
-    ctrl = ((start[0] + end[0]) / 2 + px * style.curve_strength * dist,
-            (start[1] + end[1]) / 2 + py * style.curve_strength * dist)
+    ctrl = ((start[0] + end[0]) / 2 + bow_sign * px * style.curve_strength * dist,
+            (start[1] + end[1]) / 2 + bow_sign * py * style.curve_strength * dist)
 
     ex, ey = end[0] - ctrl[0], end[1] - ctrl[1]
     ed = np.sqrt(ex ** 2 + ey ** 2) + 1e-9

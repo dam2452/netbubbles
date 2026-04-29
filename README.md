@@ -15,7 +15,7 @@
 **netbubbles** is a Python library for creating publication-quality bubble-graph visualisations of directed weighted networks. It uses circular nodes with curved arrow edges, supports multiple layout algorithms, and comes with domain-specific presets for biology, bibliometrics, software engineering, and more.
 
 <p align="center">
-  <img src="example_output/7_liana.svg" alt="netbubbles preview" width="600"/>
+  <img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/7_liana.svg" alt="netbubbles preview" width="600"/>
 </p>
 
 ## Features
@@ -68,9 +68,9 @@ For layouts, presets, customization and graph operations see **[docs/usage.md](d
     <td align="center"><b>Bilayer Layout</b></td>
   </tr>
   <tr>
-    <td><img src="example_output/1_circular.svg" width="300"/></td>
-    <td><img src="example_output/2_focus.svg" width="300"/></td>
-    <td><img src="example_output/3_bilayer.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/1_circular.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/2_focus.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/3_bilayer.svg" width="300"/></td>
   </tr>
   <tr>
     <td align="center"><b>Custom Style</b></td>
@@ -78,9 +78,9 @@ For layouts, presets, customization and graph operations see **[docs/usage.md](d
     <td align="center"><b>Social Network</b></td>
   </tr>
   <tr>
-    <td><img src="example_output/6_custom_style.svg" width="300"/></td>
-    <td><img src="example_output/11_citation_network.svg" width="300"/></td>
-    <td><img src="example_output/15_social_network.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/6_custom_style.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/11_citation_network.svg" width="300"/></td>
+    <td><img src="https://raw.githubusercontent.com/dam2452/netbubbles/main/example_output/15_social_network.svg" width="300"/></td>
   </tr>
 </table>
 

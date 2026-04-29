@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-param-doc
-
 from typing import (
     Any,
     Dict,
@@ -13,6 +11,10 @@ from typing import (
 )
 
 from ..graph import BubbleGraph
+
+# pylint: disable=missing-param-doc
+
+
 
 _STEP_COLORS = {
     "extract":   "#E41A1C",
@@ -64,9 +66,8 @@ def to_graph(
         g.add_node(
             name, color=color, radius=node_radius, label=name,
             label_position="center",
+            metadata={"type": stype, "weight": float(w) if w else 1.0},
         )
-        g.nodes[name].metadata["type"] = stype
-        g.nodes[name].metadata["weight"] = float(w) if w else 1.0
 
     for step in steps:
         name = step["name"]

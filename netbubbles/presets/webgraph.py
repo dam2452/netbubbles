@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-param-doc
-
 from collections import defaultdict
 from typing import (
     Dict,
@@ -13,17 +11,18 @@ from typing import (
 )
 
 from ..graph import BubbleGraph
+from ._common import (
+    compute_depths,
+    palette_color,
+)
 
-# ── Colour helpers ───────────────────────────────────────────────
+# pylint: disable=missing-param-doc
 
-_DEPTH_COLORS = [
-    "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
-    "#FF7F00", "#A65628", "#F781BF", "#999999",
-]
+
 
 
 def _depth_color(depth: int) -> str:
-    return _DEPTH_COLORS[min(depth, len(_DEPTH_COLORS) - 1)]
+    return palette_color(depth)
 
 
 # ── Graph builder ────────────────────────────────────────────────
@@ -47,20 +46,16 @@ def from_links(  # pylint: disable=too-many-locals
     label_max_length:
         Truncate labels longer than this.
     """
-    if root is None:
-        all_pages = set(link_dict.keys())
-        for targets in link_dict.values():
-            all_pages.update(targets)
-        all_sources = set(link_dict.keys())
-        # Root is the page with the most outgoing links
-        root = max(all_sources, key=lambda p: len(link_dict.get(p, []))) if all_sources else None
-
-    depths = _compute_depths(link_dict, root)
-    g = BubbleGraph()
-
     all_pages = set(link_dict.keys())
     for targets in link_dict.values():
         all_pages.update(targets)
+
+    if root is None:
+        all_sources = set(link_dict.keys())
+        root = max(all_sources, key=lambda p: len(link_dict.get(p, []))) if all_sources else None
+
+    depths = compute_depths(link_dict, root)
+    g = BubbleGraph()
 
     for page in sorted(all_pages):
         d = depths.get(page, 99)
@@ -108,21 +103,3 @@ def from_adjacency_dict(
             g.add_edge(src, tgt, weight=w)
 
     return g
-
-
-def _compute_depths(
-    link_dict: Dict[str, List[str]], root: Optional[str],
-) -> Dict[str, int]:
-    if root is None:
-        return {}
-    depths: Dict[str, int] = {root: 0}
-    stack = [(root, 0)]
-    visited = {root}
-    while stack:
-        node, d = stack.pop(0)
-        for child in link_dict.get(node, []):
-            if child not in visited:
-                visited.add(child)
-                depths[child] = d + 1
-                stack.append((child, d + 1))
-    return depths

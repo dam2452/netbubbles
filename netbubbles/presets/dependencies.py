@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-param-doc
-
 import ast
 import json
 from pathlib import Path
@@ -15,20 +13,18 @@ from typing import (
 )
 
 from ..graph import BubbleGraph
+from ._common import (
+    compute_depths,
+    palette_color,
+)
 
-_LAYER_COLORS = {
-    0: "#E41A1C",
-    1: "#377EB8",
-    2: "#4DAF4A",
-    3: "#984EA3",
-    4: "#FF7F00",
-    5: "#A65628",
-    6: "#F781BF",
-}
+# pylint: disable=missing-param-doc
+
+
 
 
 def _layer_color(depth: int) -> str:
-    return _LAYER_COLORS.get(min(depth, max(_LAYER_COLORS)), "#999999")
+    return palette_color(min(depth, 6))
 
 
 # ── Parsers ──────────────────────────────────────────────────────
@@ -102,7 +98,7 @@ def to_graph(
     for sub_deps in deps.values():
         all_names.update(sub_deps)
 
-    depths = _compute_depths(deps, root)
+    depths = compute_depths(deps, root)
 
     for name in sorted(all_names):
         d = depths.get(name, 99)
@@ -118,23 +114,3 @@ def to_graph(
             g.add_edge(pkg, dep, weight=1.0)
 
     return g
-
-
-def _compute_depths(
-    deps: Dict[str, List[str]], root: Optional[str],
-) -> Dict[str, int]:
-    depths: Dict[str, int] = {}
-    if root is None:
-        return depths
-    stack = [(root, 0)]
-    visited = set()
-    while stack:
-        node, d = stack.pop(0)
-        if node in visited:
-            continue
-        visited.add(node)
-        depths[node] = d
-        for child in deps.get(node, []):
-            if child not in visited:
-                stack.append((child, d + 1))
-    return depths

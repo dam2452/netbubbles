@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-param-doc
-
 from collections import defaultdict
 from pathlib import Path
 import re
@@ -15,21 +13,19 @@ from typing import (
 )
 
 from ..graph import BubbleGraph
+from ._common import (
+    PALETTE,
+    palette_color,
+)
 
-# ── Colour palette for paper/year groups ─────────────────────────
+# pylint: disable=missing-param-doc
 
-_YEAR_COLORS: Dict[str, str] = {}
-_PALETTE = [
-    "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
-    "#FF7F00", "#A65628", "#F781BF", "#999999",
-]
+
 
 
 def _year_color(year: int) -> str:
-    bucket = str((year // 3) * 3)
-    if bucket not in _YEAR_COLORS:
-        _YEAR_COLORS[bucket] = _PALETTE[len(_YEAR_COLORS) % len(_PALETTE)]
-    return _YEAR_COLORS[bucket]
+    bucket_index = (year // 3) % len(PALETTE)
+    return palette_color(bucket_index)
 
 
 # ── BibTeX parsing ───────────────────────────────────────────────
@@ -107,8 +103,7 @@ def to_graph(
         if color_by == "year" and "year" in e:
             color = _year_color(int(e["year"]))
         elif color_by == "type":
-            idx = hash(e.get("type", "article")) % len(_PALETTE)
-            color = _PALETTE[idx]
+            color = palette_color(hash(e.get("type", "article")))
         else:
             color = "#CCCCCC"
         color = (node_colors or {}).get(key, color)

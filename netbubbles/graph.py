@@ -7,12 +7,6 @@ from dataclasses import (
     dataclass,
     field,
 )
-
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
-
 from typing import (
     Any,
     Dict,
@@ -21,6 +15,8 @@ from typing import (
     Optional,
     Tuple,
 )
+
+from ._compat import Self
 
 
 @dataclass
@@ -36,6 +32,17 @@ class Node:
     @property
     def display_label(self) -> str:
         return self.label if self.label is not None else self.name
+
+    def copy(self) -> "Node":
+        return Node(
+            name=self.name,
+            color=self.color,
+            radius=self.radius,
+            label=self.label,
+            label_position=self.label_position,
+            label_fontsize=self.label_fontsize,
+            metadata=dict(self.metadata),
+        )
 
 
 @dataclass
@@ -161,21 +168,16 @@ class BubbleGraph:
 
     # ── Transforms ───────────────────────────────────────────────
 
+    def _copy_nodes_into(self, g: "BubbleGraph") -> None:
+        for node in self._nodes.values():
+            g._nodes[node.name] = node.copy()
+
     def aggregate_edges(self) -> Self:
         agg: Dict[Tuple[str, str], float] = defaultdict(float)
         for e in self._edges:
             agg[(e.source, e.target)] += e.weight
         g = BubbleGraph()
-        for name, node in self._nodes.items():
-            g.add_node(
-                name,
-                color=node.color,
-                radius=node.radius,
-                label=node.label,
-                label_position=node.label_position,
-                label_fontsize=node.label_fontsize,
-                metadata=node.metadata,
-            )
+        self._copy_nodes_into(g)
         for (src, tgt), w in agg.items():
             g.add_edge(src, tgt, weight=w)
         return g
@@ -183,14 +185,9 @@ class BubbleGraph:
     def subgraph(self, node_names: Iterable[str]) -> Self:
         keep = set(node_names)
         g = BubbleGraph()
-        for n in keep:
-            if n in self._nodes:
-                nd = self._nodes[n]
-                g.add_node(
-                    n, color=nd.color, radius=nd.radius, label=nd.label,
-                    label_position=nd.label_position, label_fontsize=nd.label_fontsize,
-                    metadata=nd.metadata,
-                )
+        for name in keep:
+            if name in self._nodes:
+                g._nodes[name] = self._nodes[name].copy()
         for e in self._edges:
             if e.source in keep and e.target in keep:
                 g.add_edge(
@@ -201,12 +198,7 @@ class BubbleGraph:
 
     def filter_edges(self, predicate) -> Self:
         g = BubbleGraph()
-        for name, node in self._nodes.items():
-            g.add_node(
-                name, color=node.color, radius=node.radius, label=node.label,
-                label_position=node.label_position, label_fontsize=node.label_fontsize,
-                metadata=node.metadata,
-            )
+        self._copy_nodes_into(g)
         for e in self._edges:
             if predicate(e):
                 g.add_edge(

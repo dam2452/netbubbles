@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-# pylint: disable=missing-param-doc
-
 from collections import defaultdict
 from pathlib import Path
 from typing import (
@@ -15,11 +13,17 @@ from typing import (
 
 from ..graph import BubbleGraph
 
+# pylint: disable=missing-param-doc
+
+
+
+_EXTRA_COLORS = [
+    "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3",
+]
 _CLUSTER_COLORS = [
     "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
     "#FF7F00", "#A65628", "#F781BF", "#999999",
-    "#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3",
-]
+] + _EXTRA_COLORS
 
 
 def _cluster_color(cluster: int) -> str:

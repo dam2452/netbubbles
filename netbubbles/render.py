@@ -603,11 +603,13 @@ def _draw_self_loop(
         color=color, lw=lw, alpha=alpha, zorder=4,
     ))
 
-    t2_rad = np.radians(theta2)
-    t_before_rad = np.radians(arc_end - 10.0)
-    tip = (cx + loop_r * np.cos(t2_rad), cy + loop_r * np.sin(t2_rad))
-    ctrl = (cx + loop_r * np.cos(t_before_rad), cy + loop_r * np.sin(t_before_rad))
-    _draw_arrowhead(ax, tip, ctrl, color, alpha, style)
+    arc_end_rad = np.radians(arc_end)
+    tan_x = -np.sin(arc_end_rad)
+    tan_y = np.cos(arc_end_rad)
+    base = (cx + loop_r * np.cos(arc_end_rad), cy + loop_r * np.sin(arc_end_rad))
+    tip = (base[0] + tan_x * style.arrowhead_length, base[1] + tan_y * style.arrowhead_length)
+    fake_ctrl = (base[0] - tan_x * 0.001, base[1] - tan_y * 0.001)
+    _draw_arrowhead(ax, tip, fake_ctrl, color, alpha, style)
 
 
 # ── Axes / title ─────────────────────────────────────────────────

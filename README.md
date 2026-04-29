@@ -98,7 +98,7 @@ If you use **netbubbles** in a publication, please cite it:
 
 **APA:**
 
-> dam2452. (2026). netbubbles: Directed bubble-graph visualisation with curved arrows (Version 0.2.0). https://github.com/dam2452/netbubbles
+> dam2452. (2026). netbubbles: Directed bubble-graph visualisation with curved arrows (Version 0.2.2). https://github.com/dam2452/netbubbles
 
 **BibTeX:**
 
@@ -107,7 +107,7 @@ If you use **netbubbles** in a publication, please cite it:
   title   = {netbubbles: Directed bubble-graph visualisation with curved arrows},
   author  = {dam2452},
   year    = {2026},
-  version = {0.2.0},
+  version = {0.2.2},
   url     = {https://github.com/dam2452/netbubbles}
 }
 ```

@@ -15,7 +15,7 @@
 **netbubbles** is a Python library for creating publication-quality bubble-graph visualisations of directed weighted networks. It uses circular nodes with curved arrow edges, supports multiple layout algorithms, and comes with domain-specific presets for biology, bibliometrics, software engineering, and more.
 
 <p align="center">
-  <img src="example_output/1_circular.svg" alt="netbubbles preview" width="600"/>
+  <img src="example_output/7_liana.svg" alt="netbubbles preview" width="600"/>
 </p>
 
 ## Features

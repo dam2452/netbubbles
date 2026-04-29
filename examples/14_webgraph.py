@@ -1,6 +1,7 @@
 """Example 14: Web link graph - page hyperlink network."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

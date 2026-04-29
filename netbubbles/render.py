@@ -3,18 +3,26 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
-import matplotlib.patheffects as mpe
 import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.path import Path as MplPath
+import matplotlib.patheffects as mpe
+import matplotlib.pyplot as plt
 from matplotlib.transforms import ScaledTranslation
+import numpy as np
 
 from .graph import BubbleGraph
-from .style import Style, default_style
-
+from .style import (
+    Style,
+    default_style,
+)
 
 # ── Public API ───────────────────────────────────────────────────
 
@@ -69,8 +77,10 @@ def add_legend(
       "NxM"      — N columns, at most M items per column (clips handles list)
     """
     labels = [n.replace("_", " ") for n in nodes]
-    handles = [mpatches.Patch(color=colors.get(n, "#CCCCCC"), label=lbl)
-               for n, lbl in zip(nodes, labels)]
+    handles = [
+        mpatches.Patch(color=colors.get(n, "#CCCCCC"), label=lbl)
+        for n, lbl in zip(nodes, labels)
+    ]
     if not handles:
         return
 
@@ -155,21 +165,27 @@ def _draw_node_circles(
     x: float, y: float, r: float,
     color: str, style: Style,
 ) -> None:
-    ax.add_patch(plt.Circle(
-        (x + style.shadow_offset, y - style.shadow_offset),
-        r, color=style.shadow_color, zorder=2, ec="none",
-    ))
-    ax.add_patch(plt.Circle(
-        (x, y), r, color=color, zorder=3,
-        ec=style.node_edgecolor, lw=style.node_edgewidth,
-    ))
+    ax.add_patch(
+        plt.Circle(
+            (x + style.shadow_offset, y - style.shadow_offset),
+            r, color=style.shadow_color, zorder=2, ec="none",
+        ),
+    )
+    ax.add_patch(
+        plt.Circle(
+            (x, y), r, color=color, zorder=3,
+            ec=style.node_edgecolor, lw=style.node_edgewidth,
+        ),
+    )
     if style.highlight:
         hx = x - r * style.highlight_offset[0]
         hy = y + r * style.highlight_offset[1]
-        ax.add_patch(plt.Circle(
-            (hx, hy), r * style.highlight_radius_frac,
-            color="white", alpha=style.highlight_alpha, zorder=4, ec="none",
-        ))
+        ax.add_patch(
+            plt.Circle(
+                (hx, hy), r * style.highlight_radius_frac,
+                color="white", alpha=style.highlight_alpha, zorder=4, ec="none",
+            ),
+        )
 
 
 def _label_placement(
@@ -261,8 +277,10 @@ def _place_label(
     )
     if style.label_stroke_color is not None:
         text_obj.set_path_effects([
-            mpe.withStroke(linewidth=style.label_stroke_width,
-                           foreground=style.label_stroke_color),
+            mpe.withStroke(
+                linewidth=style.label_stroke_width,
+                foreground=style.label_stroke_color,
+            ),
         ])
 
 
@@ -293,13 +311,17 @@ def _draw_nodes(
             )
             if style.label_stroke_color is not None:
                 text_obj.set_path_effects([
-                    mpe.withStroke(linewidth=style.label_stroke_width,
-                                   foreground=style.label_stroke_color),
+                    mpe.withStroke(
+                        linewidth=style.label_stroke_width,
+                        foreground=style.label_stroke_color,
+                    ),
                 ])
         else:
-            _place_label(ax, x, y, node.radius, label, style,
-                         angle_offset=angle_offsets.get(name, 0.0),
-                         fontsize=node.label_fontsize)
+            _place_label(
+                ax, x, y, node.radius, label, style,
+                angle_offset=angle_offsets.get(name, 0.0),
+                fontsize=node.label_fontsize,
+            )
 
 
 # ── Edges ────────────────────────────────────────────────────────
@@ -364,8 +386,10 @@ def _draw_edges(
             sa = start_ang.get(key, _inward_angle(pos[edge.source]))
             ea = end_ang.get(key, _inward_angle(pos[edge.target]))
             bow = bow_signs.get(key, 1.0)
-            _draw_arrow(ax, pos[edge.source], pos[edge.target],
-                        r_src, r_tgt, sa, ea, bow, bg_radius, color, lw, alpha, style)
+            _draw_arrow(
+                ax, pos[edge.source], pos[edge.target],
+                r_src, r_tgt, sa, ea, bow, bg_radius, color, lw, alpha, style,
+            )
 
 
 # ── Angle helpers ────────────────────────────────────────────────
@@ -471,15 +495,19 @@ def _compute_bow_signs(
     For each pair of edges whose straight-line chords cross and that share no
     node, assign opposite bow directions so their bezier arcs diverge.
     """
-    valid = [(e.source, e.target) for e in edges
-             if e.source in pos and e.target in pos]
+    valid = [
+        (e.source, e.target) for e in edges
+        if e.source in pos and e.target in pos
+    ]
     signs: Dict[Tuple[str, str], float] = {k: 1.0 for k in valid}
 
     def _cross2d(ox: float, oy: float, ax: float, ay: float, bx: float, by: float) -> float:
         return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox)
 
-    def _chords_cross(a: Tuple[float, float], b: Tuple[float, float],
-                      c: Tuple[float, float], d: Tuple[float, float]) -> bool:
+    def _chords_cross(
+        a: Tuple[float, float], b: Tuple[float, float],
+        c: Tuple[float, float], d: Tuple[float, float],
+    ) -> bool:
         d1 = _cross2d(c[0], c[1], d[0], d[1], a[0], a[1])
         d2 = _cross2d(c[0], c[1], d[0], d[1], b[0], b[1])
         d3 = _cross2d(a[0], a[1], b[0], b[1], c[0], c[1])
@@ -521,10 +549,14 @@ def _draw_arrow(
     color: str, lw: float, alpha: float,
     style: Style,
 ) -> None:
-    start = (p1[0] + r_start * np.cos(start_ang),
-             p1[1] + r_start * np.sin(start_ang))
-    end = (p2[0] + r_end * np.cos(end_ang),
-           p2[1] + r_end * np.sin(end_ang))
+    start = (
+        p1[0] + r_start * np.cos(start_ang),
+        p1[1] + r_start * np.sin(start_ang),
+    )
+    end = (
+        p2[0] + r_end * np.cos(end_ang),
+        p2[1] + r_end * np.sin(end_ang),
+    )
 
     dx, dy = p2[0] - p1[0], p2[1] - p1[1]
     dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
@@ -544,13 +576,17 @@ def _draw_arrow(
 
     ex, ey = end[0] - ctrl[0], end[1] - ctrl[1]
     ed = np.sqrt(ex ** 2 + ey ** 2) + 1e-9
-    line_end = (end[0] - ex / ed * style.arrowhead_length,
-                end[1] - ey / ed * style.arrowhead_length)
+    line_end = (
+        end[0] - ex / ed * style.arrowhead_length,
+        end[1] - ey / ed * style.arrowhead_length,
+    )
 
-    ax.add_patch(mpatches.PathPatch(
-        MplPath([start, ctrl, line_end], [MplPath.MOVETO, MplPath.CURVE3, MplPath.CURVE3]),
-        facecolor="none", edgecolor=color, lw=lw, alpha=alpha, zorder=1,
-    ))
+    ax.add_patch(
+        mpatches.PathPatch(
+            MplPath([start, ctrl, line_end], [MplPath.MOVETO, MplPath.CURVE3, MplPath.CURVE3]),
+            facecolor="none", edgecolor=color, lw=lw, alpha=alpha, zorder=1,
+        ),
+    )
     _draw_arrowhead(ax, end, ctrl, color, alpha, style)
 
 
@@ -568,10 +604,12 @@ def _draw_arrowhead(
     base = (tip[0] - tx * hl, tip[1] - ty * hl)
     left = (base[0] + ty * hw / 2, base[1] - tx * hw / 2)
     right = (base[0] - ty * hw / 2, base[1] + tx * hw / 2)
-    ax.add_patch(plt.Polygon(
-        [tip, left, right], closed=True,
-        color=color, alpha=alpha, zorder=5, ec="none",
-    ))
+    ax.add_patch(
+        plt.Polygon(
+            [tip, left, right], closed=True,
+            color=color, alpha=alpha, zorder=5, ec="none",
+        ),
+    )
 
 
 def _draw_self_loop(
@@ -597,11 +635,13 @@ def _draw_self_loop(
     head_deg = np.degrees(style.arrowhead_length / loop_r)
     arc_end = theta2 - head_deg
 
-    ax.add_patch(mpatches.Arc(
-        (cx, cy), 2 * loop_r, 2 * loop_r,
-        angle=0.0, theta1=theta1, theta2=arc_end,
-        color=color, lw=lw, alpha=alpha, zorder=4,
-    ))
+    ax.add_patch(
+        mpatches.Arc(
+            (cx, cy), 2 * loop_r, 2 * loop_r,
+            angle=0.0, theta1=theta1, theta2=arc_end,
+            color=color, lw=lw, alpha=alpha, zorder=4,
+        ),
+    )
 
     arc_end_rad = np.radians(arc_end)
     tan_x = -np.sin(arc_end_rad)

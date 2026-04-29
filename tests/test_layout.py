@@ -1,4 +1,10 @@
-from netbubbles.layout import bilayer, circular, focus, grid, manual
+from netbubbles.layout import (
+    bilayer,
+    circular,
+    focus,
+    grid,
+    manual,
+)
 
 
 class TestCircular:

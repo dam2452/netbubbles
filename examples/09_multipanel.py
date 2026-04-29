@@ -1,6 +1,7 @@
 """Example 9: Multi-panel figure - media consumption shift over decades."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

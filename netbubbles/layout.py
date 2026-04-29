@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 import numpy as np
 
@@ -43,12 +48,16 @@ def bilayer(
     pos: Dict[str, Tuple[float, float]] = {}
     for i, node in enumerate(sorted(inner_nodes)):
         angle = 2 * np.pi * i / max(len(inner_nodes), 1)
-        pos[node] = (float(inner_radius * np.cos(angle)),
-                     float(inner_radius * np.sin(angle)))
+        pos[node] = (
+            float(inner_radius * np.cos(angle)),
+            float(inner_radius * np.sin(angle)),
+        )
     for i, node in enumerate(sorted(outer_nodes)):
         angle = 2 * np.pi * i / max(len(outer_nodes), 1)
-        pos[node] = (float(outer_radius * np.cos(angle)),
-                     float(outer_radius * np.sin(angle)))
+        pos[node] = (
+            float(outer_radius * np.cos(angle)),
+            float(outer_radius * np.sin(angle)),
+        )
     return pos
 
 

@@ -1,6 +1,7 @@
 """Example 7: LIANA preset - simulated cell-cell communication data."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np

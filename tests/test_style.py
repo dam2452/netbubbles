@@ -1,4 +1,8 @@
-from netbubbles.style import EdgeTier, Style, default_style
+from netbubbles.style import (
+    EdgeTier,
+    Style,
+    default_style,
+)
 
 
 class TestDefaultStyle:

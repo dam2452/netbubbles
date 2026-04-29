@@ -1,6 +1,10 @@
 import pytest
 
-from netbubbles.graph import BubbleGraph, Edge, Node
+from netbubbles.graph import (
+    BubbleGraph,
+    Edge,
+    Node,
+)
 
 
 class TestNode:

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import (
+    Dict,
+    Optional,
+)
 
 import pandas as pd
 
 from ..graph import BubbleGraph
-
 
 _LR_THRESHOLD = 0.1
 _MIN_INTERACTIONS = 1
@@ -45,8 +47,10 @@ def to_graph(
     g = BubbleGraph()
     all_nodes = set(mat["source"]) | set(mat["target"])
     for name in all_nodes:
-        g.add_node(name, color=(node_colors or {}).get(name, "#CCCCCC"),
-                   radius=node_radius)
+        g.add_node(
+            name, color=(node_colors or {}).get(name, "#CCCCCC"),
+            radius=node_radius,
+        )
     for _, row in mat.iterrows():
         g.add_edge(row["source"], row["target"], weight=float(row["n_interactions"]))
     return g
@@ -74,8 +78,10 @@ def to_graph_filtered(
 
     g = BubbleGraph()
     for name in set(mat["source"]) | set(mat["target"]):
-        g.add_node(name, color=(node_colors or {}).get(name, "#CCCCCC"),
-                   radius=node_radius)
+        g.add_node(
+            name, color=(node_colors or {}).get(name, "#CCCCCC"),
+            radius=node_radius,
+        )
     for _, row in mat.iterrows():
         g.add_edge(row["source"], row["target"], weight=float(row["n_interactions"]))
     return g
@@ -101,12 +107,16 @@ def merge_nodes(
     for name, node in graph.nodes.items():
         if pattern in name:
             if not merged_added:
-                g.add_node(merged_label, color=merged_color, radius=node.radius,
-                           label_position="center")
+                g.add_node(
+                    merged_label, color=merged_color, radius=node.radius,
+                    label_position="center",
+                )
                 merged_added = True
         else:
-            g.add_node(name, color=node.color, radius=node.radius,
-                       label=node.label, label_position=node.label_position)
+            g.add_node(
+                name, color=node.color, radius=node.radius,
+                label=node.label, label_position=node.label_position,
+            )
     for (src, tgt), w in agg.items():
         g.add_edge(src, tgt, weight=w)
     return g

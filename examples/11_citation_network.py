@@ -1,6 +1,7 @@
 """Example 11: Citation network - bibliographic reference graph."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

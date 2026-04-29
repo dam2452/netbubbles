@@ -1,6 +1,7 @@
 """Example 8: Subgraph and edge filtering - DevOps pipeline stages."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -35,8 +36,10 @@ plt.close(ax.figure)
 print(f"  {OUT}/8_subgraph.svg")
 
 g_critical = g_full.filter_edges(lambda e: e.weight >= 7)
-ax2 = nb.draw(g_critical, title="Critical Flows",
-              subtitle="High-throughput pipeline paths (weight ≥ 7)")
+ax2 = nb.draw(
+    g_critical, title="Critical Flows",
+    subtitle="High-throughput pipeline paths (weight ≥ 7)",
+)
 ax2.figure.savefig(f"{OUT}/8b_filter.svg", bbox_inches="tight")
 plt.close(ax2.figure)
 print(f"  {OUT}/8b_filter.svg")

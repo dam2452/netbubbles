@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 from ..graph import BubbleGraph
-
 
 # ── Colour helpers ───────────────────────────────────────────────
 

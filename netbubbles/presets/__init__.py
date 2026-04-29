@@ -6,9 +6,11 @@ packages (e.g. pandas) will raise an ImportError at use-time, not at
 import-time.
 """
 
-from . import citations
-from . import dependencies
-from . import pipeline
-from . import webgraph
-from . import social
-from . import liana
+from . import (
+    citations,
+    dependencies,
+    liana,
+    pipeline,
+    social,
+    webgraph,
+)

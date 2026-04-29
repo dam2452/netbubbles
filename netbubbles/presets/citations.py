@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-import re
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+import re
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 from ..graph import BubbleGraph
-
 
 # ── Colour palette for paper/year groups ─────────────────────────
 
@@ -106,8 +111,10 @@ def to_graph(
         else:
             color = "#CCCCCC"
         color = (node_colors or {}).get(key, color)
-        g.add_node(key, color=color, radius=node_radius, label=label,
-                   label_position="outer", label_fontsize=9)
+        g.add_node(
+            key, color=color, radius=node_radius, label=label,
+            label_position="outer", label_fontsize=9,
+        )
 
     if citation_map:
         for src, targets in citation_map.items():

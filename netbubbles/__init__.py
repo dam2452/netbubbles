@@ -4,10 +4,26 @@ A Python library for creating publication-quality bubble-graph
 visualisations of directed weighted networks.
 """
 
-from .graph import BubbleGraph, Edge, Node
-from .layout import bilayer, circular, focus, grid, manual
-from .render import add_legend, draw
-from .style import Style, default_style
+from .graph import (
+    BubbleGraph,
+    Edge,
+    Node,
+)
+from .layout import (
+    bilayer,
+    circular,
+    focus,
+    grid,
+    manual,
+)
+from .render import (
+    add_legend,
+    draw,
+)
+from .style import (
+    Style,
+    default_style,
+)
 
 __all__ = [
     "BubbleGraph", "Node", "Edge",

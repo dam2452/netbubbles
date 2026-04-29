@@ -1,6 +1,7 @@
 """Example 6: Custom Style - signal flow between brain regions."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -37,8 +38,10 @@ neuro_style = nb.Style(
     arrowhead_width=0.18,
     background_color="#F4F6F9",
 )
-ax = nb.draw(g, title="Brain Region Connectivity",
-             subtitle="Signal flow with custom edge tiers", style=neuro_style)
+ax = nb.draw(
+    g, title="Brain Region Connectivity",
+    subtitle="Signal flow with custom edge tiers", style=neuro_style,
+)
 ax.figure.savefig(f"{OUT}/6_custom_style.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/6_custom_style.svg")

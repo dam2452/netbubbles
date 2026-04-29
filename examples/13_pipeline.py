@@ -1,6 +1,7 @@
 """Example 13: Data pipeline / ETL flow graph."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

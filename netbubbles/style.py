@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Sequence, Tuple
+from dataclasses import (
+    dataclass,
+    field,
+)
+from typing import (
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import numpy as np
 
@@ -29,12 +37,14 @@ class Style:
 
     # ── Edge ─────────────────────────────────────────────────────
     max_edges: int = 100
-    edge_tiers: List[EdgeTier] = field(default_factory=lambda: [
-        EdgeTier("#7B2D8B", 3.6, 0.88),
-        EdgeTier("#1A6FA8", 2.56, 0.74),
-        EdgeTier("#49A62D", 1.68, 0.60),
-        EdgeTier("#999999", 0.96, 0.45),
-    ])
+    edge_tiers: List[EdgeTier] = field(
+        default_factory=lambda: [
+            EdgeTier("#7B2D8B", 3.6, 0.88),
+            EdgeTier("#1A6FA8", 2.56, 0.74),
+            EdgeTier("#49A62D", 1.68, 0.60),
+            EdgeTier("#999999", 0.96, 0.45),
+        ],
+    )
 
     # ── Arrow geometry ───────────────────────────────────────────
     curve_strength: float = 0.12

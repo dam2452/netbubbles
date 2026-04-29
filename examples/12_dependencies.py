@@ -1,6 +1,7 @@
 """Example 12: Software dependency graph."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

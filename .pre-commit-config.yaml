@@ -1,0 +1,58 @@
+fail_fast: false
+exclude: '^(example_output/)'
+repos:
+  - repo: local
+    hooks:
+      - id: check-version-bump
+        name: Check VERSION bump
+        entry: .pre-commit-hooks/check-version-bump.py
+        language: script
+        pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: check-yaml
+      - id: check-json
+      - id: check-ast
+      - id: trailing-whitespace
+      - id: check-xml
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]
+      - id: check-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: requirements-txt-fixer
+      - id: end-of-file-fixer
+      - id: detect-private-key
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.10
+    hooks:
+      - id: actionlint
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.6
+    hooks:
+      - id: chmod
+        args: ["755"]
+        files: (.*scripts\/.*.py$|\.sh$)
+      - id: remove-tabs
+        args: [--whitespaces-count, '4']
+  - repo: https://github.com/PyCQA/isort
+    rev: 7.0.0
+    hooks:
+      - id: isort
+        args: ["--trailing-comma", "--multi-line=3", "--force-grid-wrap=2", "--combine-as", "--use-parentheses",  "--force-sort-within-sections", "--line-length=140"]
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v4.0.0
+    hooks:
+      - id: add-trailing-comma
+  - repo: https://github.com/PyCQA/pylint
+    rev: v4.0.4
+    hooks:
+      - id: pylint
+        args: ["--rcfile=./pylintrc"]

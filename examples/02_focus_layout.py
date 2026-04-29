@@ -1,6 +1,7 @@
 """Example 2: Focus layout - central warehouse in a supply chain."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -18,8 +19,10 @@ SUPPLIER_COLORS = {
 }
 
 g = nb.BubbleGraph()
-g.add_node("Warehouse", color="#2C3E50", radius=0.46 * 1.6,
-           label="WH", label_position="center")
+g.add_node(
+    "Warehouse", color="#2C3E50", radius=0.46 * 1.6,
+    label="WH", label_position="center",
+)
 for n, c in SUPPLIER_COLORS.items():
     g.add_node(n, color=c)
 
@@ -33,11 +36,15 @@ g.add_edge("Warehouse",  "Factory A",  weight=3)
 g.add_edge("E-commerce", "Returns",    weight=6)
 
 pos = nb.focus(g.node_names, center="Warehouse")
-ax = nb.draw(g, pos=pos, title="Supply Chain Hub",
-             subtitle="Central warehouse: inbound vs outbound flows",
-             constrain_angles=False)
-nb.add_legend(ax.figure, g.node_names,
-              {n: SUPPLIER_COLORS.get(n, "#2C3E50") for n in g.node_names})
+ax = nb.draw(
+    g, pos=pos, title="Supply Chain Hub",
+    subtitle="Central warehouse: inbound vs outbound flows",
+    constrain_angles=False,
+)
+nb.add_legend(
+    ax.figure, g.node_names,
+    {n: SUPPLIER_COLORS.get(n, "#2C3E50") for n in g.node_names},
+)
 ax.figure.savefig(f"{OUT}/2_focus.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/2_focus.svg")

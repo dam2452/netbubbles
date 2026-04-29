@@ -1,8 +1,8 @@
 """Run all example scripts and save output to example_output/."""
 
 import os
-import sys
 from pathlib import Path
+import sys
 
 # Ensure we run from project root
 ROOT = Path(__file__).resolve().parent.parent

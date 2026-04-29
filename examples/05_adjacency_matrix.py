@@ -1,6 +1,7 @@
 """Example 5: Adjacency matrix constructor - flight hub connectivity."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -26,8 +27,10 @@ g = nb.BubbleGraph.from_adjacency(
     },
     threshold=0,
 )
-ax = nb.draw(g, title="Flight Hub Connectivity",
-             subtitle="London · New York · Dubai · Singapore")
+ax = nb.draw(
+    g, title="Flight Hub Connectivity",
+    subtitle="London · New York · Dubai · Singapore",
+)
 ax.figure.savefig(f"{OUT}/5_adjacency.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/5_adjacency.svg")

@@ -1,6 +1,7 @@
 """Example 1: Basic circular network."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

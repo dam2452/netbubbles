@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 from ..graph import BubbleGraph
-
 
 _STEP_COLORS = {
     "extract":   "#E41A1C",
@@ -54,8 +59,10 @@ def to_graph(
         stype = step.get("type", "default")
         color = (node_colors or {}).get(name, _step_color(stype))
         w = step.get(weight_key or "weight", 1.0) if weight_key else step.get("weight", 1.0)
-        g.add_node(name, color=color, radius=node_radius, label=name,
-                   label_position="center")
+        g.add_node(
+            name, color=color, radius=node_radius, label=name,
+            label_position="center",
+        )
         g.nodes[name].metadata["type"] = stype
         g.nodes[name].metadata["weight"] = float(w) if w else 1.0
 
@@ -95,8 +102,10 @@ def from_dag(
     for name in sorted(all_names):
         stype = (step_types or {}).get(name, "default")
         color = (node_colors or {}).get(name, _step_color(stype))
-        g.add_node(name, color=color, radius=node_radius, label=name,
-                   label_position="center")
+        g.add_node(
+            name, color=color, radius=node_radius, label=name,
+            label_position="center",
+        )
 
     for src, tgt, w in edges:
         g.add_edge(src, tgt, weight=w)

@@ -1,6 +1,7 @@
 """Example 4: Quick constructor - global trade flows between economic blocs."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -24,8 +25,10 @@ g = nb.BubbleGraph.from_weighted_edges(
         "Asia":     "#4DAF4A",
     },
 )
-ax = nb.draw(g, title="Global Trade Flows",
-             subtitle="Inter-regional merchandise trade volumes")
+ax = nb.draw(
+    g, title="Global Trade Flows",
+    subtitle="Inter-regional merchandise trade volumes",
+)
 ax.figure.savefig(f"{OUT}/4_weighted_edges.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/4_weighted_edges.svg")

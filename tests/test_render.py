@@ -1,8 +1,13 @@
-import pytest
 import matplotlib.pyplot as plt
+import pytest
 
 from netbubbles.graph import BubbleGraph
-from netbubbles.render import _balance_ncol, _resolve_ncol, add_legend, draw
+from netbubbles.render import (
+    _balance_ncol,
+    _resolve_ncol,
+    add_legend,
+    draw,
+)
 from netbubbles.style import Style
 
 

@@ -1,6 +1,7 @@
 """Example 15: Social network - follower/interaction graph."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

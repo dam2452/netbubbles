@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 from ..graph import BubbleGraph
-
 
 _CLUSTER_COLORS = [
     "#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
@@ -82,8 +86,10 @@ def from_adjacency_file(
             edges.append((parts[0], parts[1], float(parts[2])))
         elif len(parts) == 2:
             edges.append((parts[0], parts[1], 1.0))
-    return from_edge_list(edges, clusters=clusters, node_radius=node_radius,
-                          node_colors=node_colors)
+    return from_edge_list(
+        edges, clusters=clusters, node_radius=node_radius,
+        node_colors=node_colors,
+    )
 
 
 def from_interaction_counts(
@@ -107,8 +113,10 @@ def from_interaction_counts(
         (s, t, w) for (s, t), w in counts.items()
         if w >= min_interactions
     ]
-    return from_edge_list(edges, clusters=clusters, node_radius=node_radius,
-                          node_colors=node_colors)
+    return from_edge_list(
+        edges, clusters=clusters, node_radius=node_radius,
+        node_colors=node_colors,
+    )
 
 
 # ── Community detection (simple label propagation) ───────────────

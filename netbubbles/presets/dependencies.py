@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import ast
 import json
-import re
 from pathlib import Path
-from typing import Dict, List, Optional
+import re
+from typing import (
+    Dict,
+    List,
+    Optional,
+)
 
 from ..graph import BubbleGraph
-
 
 _LAYER_COLORS = {
     0: "#E41A1C",
@@ -103,8 +106,10 @@ def to_graph(
         d = depths.get(name, 99)
         color = (node_colors or {}).get(name, _layer_color(d))
         r = node_radius * 1.3 if name == root else node_radius
-        g.add_node(name, color=color, radius=r, label=name,
-                   label_position="center" if name == root else "outer")
+        g.add_node(
+            name, color=color, radius=r, label=name,
+            label_position="center" if name == root else "outer",
+        )
 
     for pkg, sub_deps in deps.items():
         for dep in sub_deps:

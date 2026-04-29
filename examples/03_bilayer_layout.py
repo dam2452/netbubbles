@@ -1,6 +1,7 @@
 """Example 3: Bilayer layout - predator-prey food web."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -12,8 +13,10 @@ INNER = ["Wolf", "Eagle", "Lynx"]
 OUTER = ["Rabbit", "Deer", "Mouse", "Salmon"]
 
 PRED_COLORS = {"Wolf": "#2C3E50", "Eagle": "#8B4513", "Lynx": "#C0392B"}
-PREY_COLORS = {"Rabbit": "#7FB3D3", "Deer": "#82E0AA",
-               "Mouse":  "#F8C471", "Salmon": "#EC7063"}
+PREY_COLORS = {
+    "Rabbit": "#7FB3D3", "Deer": "#82E0AA",
+    "Mouse":  "#F8C471", "Salmon": "#EC7063",
+}
 
 g = nb.BubbleGraph()
 for n in INNER:
@@ -41,9 +44,11 @@ style = nb.Style(
     title_fontsize=22,
 )
 all_colors = {**PRED_COLORS, **PREY_COLORS}
-ax = nb.draw(g, pos=pos, title="Predator-Prey Food Web",
-             subtitle="Inner ring: predators  |  Outer ring: prey",
-             style=style, constrain_angles=False)
+ax = nb.draw(
+    g, pos=pos, title="Predator-Prey Food Web",
+    subtitle="Inner ring: predators  |  Outer ring: prey",
+    style=style, constrain_angles=False,
+)
 nb.add_legend(ax.figure, INNER + OUTER, all_colors)
 ax.figure.savefig(f"{OUT}/3_bilayer.svg", bbox_inches="tight")
 plt.close(ax.figure)

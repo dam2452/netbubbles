@@ -447,6 +447,18 @@ def _compute_spread_angles(
             else:
                 end[edge] = adjusted[i]
 
+    # bidirectional pairs share the same attachment point on both nodes
+    edge_keys = set(start.keys())
+    for key in edge_keys:
+        rev = (key[1], key[0])
+        if rev in edge_keys:
+            nat_fwd = _natural_angle(pos, key[0], key[1])
+            nat_rev = _natural_angle(pos, key[1], key[0])
+            start[key] = nat_fwd
+            end[key] = nat_rev
+            start[rev] = nat_rev
+            end[rev] = nat_fwd
+
     return start, end
 
 
@@ -476,13 +488,22 @@ def _compute_bow_signs(
 
     for i in range(len(valid)):
         k1 = valid[i]
+        rev1 = (k1[1], k1[0])
         for j in range(i + 1, len(valid)):
             k2 = valid[j]
+            if k2 == rev1:
+                continue
             if k1[0] in k2 or k1[1] in k2:
                 continue
             if _chords_cross(pos[k1[0]], pos[k1[1]], pos[k2[0]], pos[k2[1]]):
                 if signs[k1] == signs[k2]:
                     signs[k2] = -signs[k2]
+
+    # sync bidirectional pairs: same bow_sign = opposite physical bow (reversed vector)
+    for k in list(signs):
+        rev = (k[1], k[0])
+        if rev in signs and k < rev:
+            signs[rev] = signs[k]
 
     return signs
 

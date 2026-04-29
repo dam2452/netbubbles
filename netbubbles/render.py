@@ -40,11 +40,12 @@ def draw(
 
     if style.ax_facecolor is not None:
         ax.set_facecolor(style.ax_facecolor)
+    _finalize_axes(ax, pos, style)
     if background:
         _draw_background(ax, pos, style)
-    _draw_edges(ax, graph, pos, style, constrain_angles)
+    border_half = _node_border_half_data(ax, style)
+    _draw_edges(ax, graph, pos, style, constrain_angles, border_half)
     _draw_nodes(ax, graph, pos, style)
-    _finalize_axes(ax, pos, style)
     content_top = _compute_content_top(ax, graph, pos, style)
     _draw_title(ax, title, subtitle, style, content_top)
     return ax
@@ -303,12 +304,23 @@ def _draw_nodes(
 
 # ── Edges ────────────────────────────────────────────────────────
 
+def _node_border_half_data(ax: plt.Axes, style: Style) -> float:
+    """Return half of node_edgewidth converted from points to data units."""
+    dpi = ax.figure.dpi
+    border_px = style.node_edgewidth / 2.0 * dpi / 72.0
+    inv = ax.transData.inverted()
+    p0 = inv.transform((0.0, 0.0))
+    p1 = inv.transform((0.0, border_px))
+    return float(abs(p1[1] - p0[1]))
+
+
 def _draw_edges(
     ax: plt.Axes,
     graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],
     style: Style,
     constrain_angles: bool,
+    border_half: float,
 ) -> None:
     edges = graph.edges
     if not edges:
@@ -334,8 +346,8 @@ def _draw_edges(
         lw = edge.linewidth or style.edge_linewidth(frac)
         alpha = edge.alpha or style.edge_alpha(frac)
 
-        r_src = graph.nodes[edge.source].radius
-        r_tgt = graph.nodes[edge.target].radius
+        r_src = graph.nodes[edge.source].radius + border_half
+        r_tgt = graph.nodes[edge.target].radius + border_half
 
         if edge.is_self_loop:
             _draw_self_loop(ax, pos[edge.source], r_src, color, lw, alpha, style)

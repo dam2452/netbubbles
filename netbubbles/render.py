@@ -171,20 +171,88 @@ def _draw_node_circles(
         ))
 
 
-def _draw_outer_label(
+def _label_placement(
+    x: float, y: float, r: float,
+    angle_offset: float,
+    label_offset: float,
+) -> Tuple[float, float, str, str]:
+    """Return (lx, ly, ha, va) for an outer label at node (x, y).
+
+    angle_offset nudges the label angle to separate crowded neighbours.
+    ha/va are chosen from 9 directions based on the final angle so the text
+    anchor always points away from the node — no text ever sits on top of its
+    own bubble.
+    """
+    base_angle = float(np.arctan2(y, x)) if (abs(x) + abs(y)) > 1e-9 else np.pi / 2
+    angle = base_angle + angle_offset
+    ux, uy = float(np.cos(angle)), float(np.sin(angle))
+    lx = x + (r + label_offset) * ux
+    ly = y + (r + label_offset) * uy
+
+    cos_thresh = 0.35
+    if ux > cos_thresh:
+        ha = "left"
+    elif ux < -cos_thresh:
+        ha = "right"
+    else:
+        ha = "center"
+
+    if uy > cos_thresh:
+        va = "bottom"
+    elif uy < -cos_thresh:
+        va = "top"
+    else:
+        va = "center"
+
+    return lx, ly, ha, va
+
+
+def _compute_angle_offsets(
+    pos: Dict[str, List[str]],
+    node_names: List[str],
+    min_sep_rad: float = float(np.radians(18.0)),
+) -> Dict[str, float]:
+    """Push apart labels for nodes whose outward angles are too close.
+
+    Iterates pairs sorted by angular distance; for each pair that is closer
+    than min_sep_rad, nudges both in opposite directions just enough to reach
+    the minimum separation.  Returns a dict of name -> angle_offset (radians).
+    """
+    angles = {}
+    for name in node_names:
+        if name not in pos:
+            continue
+        x, y = pos[name]
+        angles[name] = float(np.arctan2(y, x)) if (abs(x) + abs(y)) > 1e-9 else np.pi / 2
+
+    offsets: Dict[str, float] = {n: 0.0 for n in angles}
+
+    names = list(angles.keys())
+    for _ in range(6):
+        moved = False
+        for i in range(len(names)):
+            for j in range(i + 1, len(names)):
+                a, b = names[i], names[j]
+                da = ((angles[a] + offsets[a]) - (angles[b] + offsets[b]) + np.pi) % (2 * np.pi) - np.pi
+                if abs(da) < min_sep_rad:
+                    push = (min_sep_rad - abs(da)) / 2.0 * np.sign(da) if da != 0 else min_sep_rad / 2.0
+                    offsets[a] += push
+                    offsets[b] -= push
+                    moved = True
+        if not moved:
+            break
+
+    return offsets
+
+
+def _place_label(
     ax: plt.Axes,
     x: float, y: float, r: float,
     label: str, style: Style,
+    angle_offset: float = 0.0,
     fontsize: Optional[float] = None,
 ) -> None:
-    dist = np.sqrt(x ** 2 + y ** 2)
-    ux, uy = (x / dist, y / dist) if dist > 1e-9 else (0.0, 1.0)
-    lx = x + (r + style.label_offset) * ux
-    ly = y + (r + style.label_offset) * uy
-    if abs(ux) >= abs(uy):
-        ha, va = ("left" if ux > 0 else "right"), "center"
-    else:
-        ha, va = "center", ("bottom" if uy > 0 else "top")
+    lx, ly, ha, va = _label_placement(x, y, r, angle_offset, style.label_offset)
     text_obj = ax.text(
         lx, ly, label, ha=ha, va=va,
         fontsize=fontsize or style.label_fontsize,
@@ -192,7 +260,8 @@ def _draw_outer_label(
     )
     if style.label_stroke_color is not None:
         text_obj.set_path_effects([
-            mpe.withStroke(linewidth=style.label_stroke_width, foreground=style.label_stroke_color),
+            mpe.withStroke(linewidth=style.label_stroke_width,
+                           foreground=style.label_stroke_color),
         ])
 
 
@@ -202,6 +271,13 @@ def _draw_nodes(
     pos: Dict[str, Tuple[float, float]],
     style: Style,
 ) -> None:
+    outer_names = [
+        n for n, node in graph.nodes.items()
+        if n in pos and node.label_position != "center"
+    ]
+    min_sep = float(np.radians(style.label_min_sep_deg))
+    angle_offsets = _compute_angle_offsets(pos, outer_names, min_sep_rad=min_sep)  # type: ignore[arg-type]
+
     for name, node in graph.nodes.items():
         if name not in pos:
             continue
@@ -216,10 +292,13 @@ def _draw_nodes(
             )
             if style.label_stroke_color is not None:
                 text_obj.set_path_effects([
-                    mpe.withStroke(linewidth=style.label_stroke_width, foreground=style.label_stroke_color),
+                    mpe.withStroke(linewidth=style.label_stroke_width,
+                                   foreground=style.label_stroke_color),
                 ])
         else:
-            _draw_outer_label(ax, x, y, node.radius, label, style, fontsize=node.label_fontsize)
+            _place_label(ax, x, y, node.radius, label, style,
+                         angle_offset=angle_offsets.get(name, 0.0),
+                         fontsize=node.label_fontsize)
 
 
 # ── Edges ────────────────────────────────────────────────────────

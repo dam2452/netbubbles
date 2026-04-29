@@ -61,6 +61,7 @@ class Style:
     center_label_color: str = "black"
     label_stroke_color: Optional[str] = None
     label_stroke_width: float = 2.5
+    label_min_sep_deg: float = 18.0
     title_fontsize: float = 25.0
     title_pad: float = 26.0
     subtitle_fontsize_ratio: float = 0.5

@@ -3,10 +3,12 @@ import pytest
 
 from netbubbles.graph import BubbleGraph
 from netbubbles.render import (
-    _balance_ncol,
-    _resolve_ncol,
     add_legend,
     draw,
+)
+from netbubbles.render.legend import (
+    _balance_ncol,
+    _resolve_ncol,
 )
 from netbubbles.style import Style
 

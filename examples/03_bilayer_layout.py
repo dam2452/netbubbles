@@ -37,8 +37,8 @@ g.add_edge("Rabbit","Lynx",   weight=2)
 pos = nb.bilayer(INNER, OUTER)
 style = nb.Style(
     background_circles=[
-        (0, 0, 1.50 + 0.13 + 0.22, "#F5F5DC"),
-        (0, 0, 0.60 + 0.20 + 0.12, "#E8F5E9"),
+        (0, 0, 1.50 + 0.13 + 0.22, "#E8EEF4"),
+        (0, 0, 0.60 + 0.20 + 0.12, "#D5E8D4"),
     ],
     arrowhead_length=0.115,
     arrowhead_width=0.07,

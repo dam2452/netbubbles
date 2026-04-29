@@ -338,6 +338,13 @@ def _draw_edges(
     start_ang, end_ang = _compute_spread_angles(regular, pos, constrain_angles, style)
     bow_signs = _compute_bow_signs(regular, pos)
 
+    if style.background_circles:
+        bg_radius = max(abs(cy) + r for _, cy, r, _ in style.background_circles)
+    elif pos:
+        bg_radius = max(np.sqrt(x ** 2 + y ** 2) for x, y in pos.values()) * 0.95
+    else:
+        bg_radius = float("inf")
+
     for edge in top:
         if edge.source not in pos or edge.target not in pos:
             continue
@@ -358,7 +365,7 @@ def _draw_edges(
             ea = end_ang.get(key, _inward_angle(pos[edge.target]))
             bow = bow_signs.get(key, 1.0)
             _draw_arrow(ax, pos[edge.source], pos[edge.target],
-                        r_src, r_tgt, sa, ea, bow, color, lw, alpha, style)
+                        r_src, r_tgt, sa, ea, bow, bg_radius, color, lw, alpha, style)
 
 
 # ── Angle helpers ────────────────────────────────────────────────
@@ -489,6 +496,7 @@ def _draw_arrow(
     r_start: float, r_end: float,
     start_ang: float, end_ang: float,
     bow_sign: float,
+    bg_radius: float,
     color: str, lw: float, alpha: float,
     style: Style,
 ) -> None:
@@ -501,8 +509,17 @@ def _draw_arrow(
     dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
     px, py = -dy / dist, dx / dist
 
-    ctrl = ((start[0] + end[0]) / 2 + bow_sign * px * style.curve_strength * dist,
-            (start[1] + end[1]) / 2 + bow_sign * py * style.curve_strength * dist)
+    mx = (start[0] + end[0]) / 2.0
+    my = (start[1] + end[1]) / 2.0
+    cx = mx + bow_sign * px * style.curve_strength * dist
+    cy = my + bow_sign * py * style.curve_strength * dist
+
+    # clamp control point inside background circle
+    cd = np.sqrt(cx ** 2 + cy ** 2)
+    if cd > bg_radius:
+        cx, cy = cx * bg_radius / cd, cy * bg_radius / cd
+
+    ctrl = (cx, cy)
 
     ex, ey = end[0] - ctrl[0], end[1] - ctrl[1]
     ed = np.sqrt(ex ** 2 + ey ** 2) + 1e-9

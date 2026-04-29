@@ -37,10 +37,10 @@ class Style:
     ])
 
     # ── Arrow geometry ───────────────────────────────────────────
-    curve_strength: float = 0.18
+    curve_strength: float = 0.12
     arrowhead_length: float = 0.23
     arrowhead_width: float = 0.14
-    arrow_spread_rad: float = float(np.radians(13.0))
+    arrow_spread_rad: float = float(np.radians(8.0))
 
     # ── Self-loop ────────────────────────────────────────────────
     self_loop_radius_frac: float = 0.6

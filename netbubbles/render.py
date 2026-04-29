@@ -104,7 +104,7 @@ def _resolve_ncol(
     if isinstance(ncol, int):
         return ncol, handles
 
-    # auto: estimate item width in points, fit within 150% of figure width
+    # auto: estimate item width in points, fit within 125% of figure width
     fig_width_pt = fig.get_figwidth() * 72.0
     max_legend_pt = fig_width_pt * 1.25
     handle_pt = 30.0  # patch + gap
@@ -112,7 +112,22 @@ def _resolve_ncol(
     max_label_len = max((len(lbl) for lbl in labels), default=1)
     item_pt = handle_pt + max_label_len * char_pt
     auto_ncol = max(1, min(len(handles), int(max_legend_pt / item_pt)))
-    return auto_ncol, handles
+    return _balance_ncol(auto_ncol, len(handles)), handles
+
+
+def _balance_ncol(max_ncol: int, n: int) -> int:
+    initial_waste = (-n) % max_ncol if max_ncol else 0
+    if initial_waste < max_ncol / 3:
+        return max_ncol
+    min_ncol = max(1, int(max_ncol * 0.75))
+    best_ncol, best_waste = max_ncol, initial_waste
+    for c in range(max_ncol - 1, min_ncol - 1, -1):
+        waste = (-n) % c
+        if waste < best_waste:
+            best_waste, best_ncol = waste, c
+        if best_waste == 0:
+            break
+    return best_ncol
 
 
 # ── Background ──────────────────────────────────────────────────

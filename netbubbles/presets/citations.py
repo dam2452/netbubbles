@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+# pylint: disable=missing-param-doc
+
 from collections import defaultdict
 from pathlib import Path
 import re
 from typing import (
-    Any,
     Dict,
     List,
     Optional,
@@ -125,7 +126,7 @@ def to_graph(
     return g
 
 
-def _author_graph(
+def _author_graph(  # pylint: disable=too-many-locals
     entries: List[Dict[str, str]],
     citation_map: Optional[Dict[str, List[str]]],
     node_radius: float,

@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from netbubbles.style import (
     EdgeTier,
     Style,

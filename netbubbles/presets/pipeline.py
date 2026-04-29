@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pylint: disable=missing-param-doc
+
 from typing import (
     Any,
     Dict,

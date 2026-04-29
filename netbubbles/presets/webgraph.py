@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+# pylint: disable=missing-param-doc
+
 from collections import defaultdict
 from typing import (
     Dict,
@@ -26,7 +28,7 @@ def _depth_color(depth: int) -> str:
 
 # ── Graph builder ────────────────────────────────────────────────
 
-def from_links(
+def from_links(  # pylint: disable=too-many-locals
     link_dict: Dict[str, List[str]],
     *,
     root: Optional[str] = None,

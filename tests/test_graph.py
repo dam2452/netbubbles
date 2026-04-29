@@ -105,8 +105,8 @@ class TestBubbleGraph:
 
     def test_empty_graph(self):
         g = BubbleGraph()
-        assert g.nodes == {}
-        assert g.edges == []
+        assert not g.nodes
+        assert not g.edges
 
 
 class TestConstructors:

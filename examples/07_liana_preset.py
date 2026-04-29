@@ -3,6 +3,7 @@
 import matplotlib
 
 matplotlib.use("Agg")
+# pylint: disable=wrong-import-position
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

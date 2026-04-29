@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from pathlib import Path
 from typing import (
     Dict,
     Optional,
+    Tuple,
 )
 
 import pandas as pd
@@ -94,8 +96,6 @@ def merge_nodes(
     merged_color: str = "#911EB4",
 ) -> BubbleGraph:
     """Merge all nodes whose name contains *pattern* into a single node."""
-    from collections import defaultdict
-
     agg: Dict[Tuple[str, str], float] = defaultdict(float)
     for e in graph.edges:
         src = merged_label if pattern in e.source else e.source

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import math
 from typing import (
     Dict,
     List,
@@ -19,6 +20,7 @@ from matplotlib.transforms import ScaledTranslation
 import numpy as np
 
 from .graph import BubbleGraph
+from .layout import circular as _circular_layout
 from .style import (
     Style,
     default_style,
@@ -41,8 +43,7 @@ def draw(
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
     if pos is None:
-        from .layout import circular
-        pos = circular(graph.node_names)
+        pos = _circular_layout(graph.node_names)
 
     graph.positions = pos
 
@@ -247,7 +248,7 @@ def _compute_angle_offsets(
     names = list(angles.keys())
     for _ in range(6):
         moved = False
-        for i in range(len(names)):
+        for i in range(len(names)):  # pylint: disable=consider-using-enumerate
             for j in range(i + 1, len(names)):
                 a, b = names[i], names[j]
                 da = ((angles[a] + offsets[a]) - (angles[b] + offsets[b]) + np.pi) % (2 * np.pi) - np.pi
@@ -336,7 +337,7 @@ def _node_border_half_data(ax: plt.Axes, style: Style) -> float:
     return float(abs(p1[1] - p0[1]))
 
 
-def _draw_edges(
+def _draw_edges(  # pylint: disable=too-many-locals
     ax: plt.Axes,
     graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],
@@ -365,7 +366,7 @@ def _draw_edges(
     elif pos:
         bg_radius = max(np.sqrt(x ** 2 + y ** 2) for x, y in pos.values()) * 0.95
     else:
-        bg_radius = float("inf")
+        bg_radius = math.inf
 
     for edge in top:
         if edge.source not in pos or edge.target not in pos:
@@ -410,7 +411,7 @@ def _natural_angle(
     return float(np.arctan2(dy, dx))
 
 
-def _compute_spread_angles(
+def _compute_spread_angles(  # pylint: disable=too-many-locals
     edges: list,
     pos: Dict[str, Tuple[float, float]],
     constrain: bool,
@@ -514,7 +515,7 @@ def _compute_bow_signs(
         d4 = _cross2d(a[0], a[1], b[0], b[1], d[0], d[1])
         return ((d1 > 0) != (d2 > 0)) and ((d3 > 0) != (d4 > 0))
 
-    for i in range(len(valid)):
+    for i in range(len(valid)):  # pylint: disable=consider-using-enumerate
         k1 = valid[i]
         rev1 = (k1[1], k1[0])
         for j in range(i + 1, len(valid)):
@@ -538,7 +539,7 @@ def _compute_bow_signs(
 
 # ── Arrow / arrowhead / self-loop ────────────────────────────────
 
-def _draw_arrow(
+def _draw_arrow(  # pylint: disable=too-many-arguments,too-many-locals
     ax: plt.Axes,
     p1: Tuple[float, float],
     p2: Tuple[float, float],
@@ -612,7 +613,7 @@ def _draw_arrowhead(
     )
 
 
-def _draw_self_loop(
+def _draw_self_loop(  # pylint: disable=too-many-locals
     ax: plt.Axes,
     pos_tuple: Tuple[float, float],
     node_r: float,
@@ -676,7 +677,7 @@ def _finalize_axes(
     ax.set_aspect("equal")
 
 
-def _compute_content_top(
+def _compute_content_top(  # pylint: disable=too-many-locals
     ax: plt.Axes,
     graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],

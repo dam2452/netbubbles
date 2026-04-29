@@ -1,5 +1,6 @@
 """Run all example scripts and save output to example_output/."""
 
+# pylint: disable=duplicate-code
 import os
 from pathlib import Path
 import sys
@@ -23,7 +24,7 @@ for script in scripts:
     try:
         with open(script, encoding="utf-8") as f:
             code = f.read()
-        exec(compile(code, str(script), "exec"), {"__name__": "__main__", "__file__": str(script)})
+        exec(compile(code, str(script), "exec"), {"__name__": "__main__", "__file__": str(script)})  # pylint: disable=exec-used
     except Exception as e:
         print(f"ERROR: {e}")
 

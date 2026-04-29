@@ -9,7 +9,6 @@ from dataclasses import (
 from typing import (
     List,
     Optional,
-    Sequence,
     Tuple,
 )
 
@@ -24,7 +23,7 @@ class EdgeTier:
 
 
 @dataclass
-class Style:
+class Style:  # pylint: disable=too-many-instance-attributes
     # ── Node ─────────────────────────────────────────────────────
     node_edgecolor: str = "white"
     node_edgewidth: float = 2.8

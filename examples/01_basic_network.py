@@ -1,8 +1,10 @@
 """Example 1: Basic circular network."""
 
+# pylint: disable=duplicate-code
 import matplotlib
 
 matplotlib.use("Agg")
+# pylint: disable=wrong-import-position
 import matplotlib.pyplot as plt
 
 import netbubbles as nb

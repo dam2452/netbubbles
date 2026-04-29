@@ -1,4 +1,4 @@
-"""Example 9: Multi-panel figure."""
+"""Example 9: Multi-panel figure - media consumption shift over decades."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -8,19 +8,50 @@ import netbubbles as nb
 
 OUT = "example_output"
 
-fig, axes = plt.subplots(1, 3, figsize=(21, 7))
-for ax in axes:
-    ax.set_aspect("equal")
+COLORS = {
+    "Broadcast": "#E41A1C",
+    "Print":     "#377EB8",
+    "Digital":   "#4DAF4A",
+}
 
-graphs = [
-    ("T1: Early", {("A", "B"): 3, ("B", "C"): 2, ("C", "A"): 1}),
-    ("T2: Mid",   {("A", "B"): 7, ("B", "C"): 5, ("C", "A"): 4, ("A", "C"): 2}),
-    ("T3: Late",  {("A", "B"): 10, ("B", "C"): 8, ("C", "A"): 6, ("A", "C"): 5, ("B", "A"): 3}),
+panels = [
+    (
+        "2000s: Broadcast Era",
+        {
+            ("Broadcast", "Print"):   6,
+            ("Print",     "Broadcast"): 4,
+            ("Broadcast", "Digital"): 2,
+            ("Digital",   "Broadcast"): 1,
+            ("Print",     "Digital"): 3,
+        },
+    ),
+    (
+        "2010s: Convergence",
+        {
+            ("Broadcast", "Digital"): 7,
+            ("Digital",   "Broadcast"): 5,
+            ("Print",     "Digital"): 8,
+            ("Digital",   "Print"):   4,
+            ("Broadcast", "Print"):   3,
+        },
+    ),
+    (
+        "2020s: Digital-First",
+        {
+            ("Digital",   "Broadcast"): 9,
+            ("Digital",   "Print"):     8,
+            ("Broadcast", "Digital"):   5,
+            ("Print",     "Digital"):   4,
+            ("Broadcast", "Print"):     2,
+            ("Digital",   "Digital"):   3,
+        },
+    ),
 ]
-colors = {"A": "#E41A1C", "B": "#377EB8", "C": "#4DAF4A"}
 
-for ax, (title, pairs) in zip(axes, graphs):
-    g = nb.BubbleGraph.from_weighted_edges(pairs, colors=colors)
+fig, axes = plt.subplots(1, 3, figsize=(21, 7))
+
+for ax, (title, pairs) in zip(axes, panels):
+    g = nb.BubbleGraph.from_weighted_edges(pairs, colors=COLORS)
     pos = nb.circular(g.node_names)
     nb.draw(g, ax=ax, pos=pos, title=title)
 

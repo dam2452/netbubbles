@@ -1,4 +1,4 @@
-"""Example 4: Quick constructor - from_weighted_edges()."""
+"""Example 4: Quick constructor - global trade flows between economic blocs."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -10,16 +10,22 @@ OUT = "example_output"
 
 g = nb.BubbleGraph.from_weighted_edges(
     {
-        ("Alpha", "Beta"):  10,
-        ("Beta", "Gamma"):  7,
-        ("Gamma", "Alpha"): 5,
-        ("Alpha", "Gamma"): 3,
-        ("Beta", "Alpha"):  2,
-        ("Gamma", "Gamma"): 1,
+        ("Americas", "Europe"):   8,
+        ("Europe",   "Americas"): 6,
+        ("Europe",   "Asia"):     9,
+        ("Asia",     "Europe"):   7,
+        ("Asia",     "Americas"): 10,
+        ("Americas", "Asia"):     5,
+        ("Asia",     "Asia"):     3,
     },
-    colors={"Alpha": "#FF6B6B", "Beta": "#4ECDC4", "Gamma": "#45B7D1"},
+    colors={
+        "Americas": "#E41A1C",
+        "Europe":   "#377EB8",
+        "Asia":     "#4DAF4A",
+    },
 )
-ax = nb.draw(g, title="from_weighted_edges()", subtitle="Quick constructor")
+ax = nb.draw(g, title="Global Trade Flows",
+             subtitle="Inter-regional merchandise trade volumes")
 ax.figure.savefig(f"{OUT}/4_weighted_edges.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/4_weighted_edges.svg")

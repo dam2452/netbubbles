@@ -1,4 +1,4 @@
-"""Example 2: Focus layout - one node in the center."""
+"""Example 2: Focus layout - central warehouse in a supply chain."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -8,31 +8,36 @@ import netbubbles as nb
 
 OUT = "example_output"
 
-COLORS = {
-    "T cell":     "#45B7D1",
-    "B cell":     "#4ECDC4",
-    "NK cell":    "#45B7D1",
-    "Dendritic":  "#FFA07A",
-    "Fibroblast": "#7FC97F",
+SUPPLIER_COLORS = {
+    "Factory A":  "#E74C3C",
+    "Factory B":  "#C0392B",
+    "Retail":     "#2980B9",
+    "E-commerce": "#1ABC9C",
+    "Export":     "#8E44AD",
+    "Returns":    "#F39C12",
 }
 
 g = nb.BubbleGraph()
-g.add_node("Macrophage", color="#911EB4", radius=0.46 * 1.6,
-           label="MACs", label_position="center")
-for n in ["T cell", "B cell", "NK cell", "Dendritic", "Fibroblast"]:
-    g.add_node(n, color=COLORS[n])
+g.add_node("Warehouse", color="#2C3E50", radius=0.46 * 1.6,
+           label="WH", label_position="center")
+for n, c in SUPPLIER_COLORS.items():
+    g.add_node(n, color=c)
 
-g.add_edge("Macrophage", "T cell", weight=7)
-g.add_edge("Macrophage", "B cell", weight=5)
-g.add_edge("Macrophage", "NK cell", weight=3)
-g.add_edge("Macrophage", "Dendritic", weight=4)
-g.add_edge("Macrophage", "Fibroblast", weight=2)
-g.add_edge("NK cell", "Macrophage", weight=3)
-g.add_edge("T cell", "Macrophage", weight=4)
+g.add_edge("Factory A",  "Warehouse",  weight=9)
+g.add_edge("Factory B",  "Warehouse",  weight=7)
+g.add_edge("Warehouse",  "Retail",     weight=8)
+g.add_edge("Warehouse",  "E-commerce", weight=10)
+g.add_edge("Warehouse",  "Export",     weight=5)
+g.add_edge("Returns",    "Warehouse",  weight=4)
+g.add_edge("Warehouse",  "Factory A",  weight=3)
+g.add_edge("E-commerce", "Returns",    weight=6)
 
-pos = nb.focus(g.node_names, center="Macrophage")
-ax = nb.draw(g, pos=pos, title="Focus: Macrophage", constrain_angles=False)
-nb.add_legend(ax.figure, g.node_names, {n: COLORS.get(n, "#911EB4") for n in g.node_names})
+pos = nb.focus(g.node_names, center="Warehouse")
+ax = nb.draw(g, pos=pos, title="Supply Chain Hub",
+             subtitle="Central warehouse: inbound vs outbound flows",
+             constrain_angles=False)
+nb.add_legend(ax.figure, g.node_names,
+              {n: SUPPLIER_COLORS.get(n, "#2C3E50") for n in g.node_names})
 ax.figure.savefig(f"{OUT}/2_focus.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/2_focus.svg")

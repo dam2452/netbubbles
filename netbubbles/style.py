@@ -64,7 +64,7 @@ class Style:
     title_fontsize: float = 25.0
     title_pad: float = 26.0
     subtitle_fontsize_ratio: float = 0.5
-    subtitle_pad: float = 4.0
+    subtitle_pad: float = 3.0
 
     # ── Methods ──────────────────────────────────────────────────
 

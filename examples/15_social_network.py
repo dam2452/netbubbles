@@ -1,4 +1,4 @@
-"""Example 15: Social network — follower/interaction graph."""
+"""Example 15: Social network - follower/interaction graph."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -42,6 +42,6 @@ clusters = social.detect_clusters(g_temp)
 
 g = social.from_edge_list(edges, clusters=clusters)
 ax = nb.draw(g, title="Social Network", subtitle="10 users, color by community")
-ax.figure.savefig(f"{OUT}/15_social_network.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/15_social_network.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/15_social_network.png")
+print(f"  {OUT}/15_social_network.svg")

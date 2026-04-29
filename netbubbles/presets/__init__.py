@@ -1,4 +1,4 @@
-"""netbubbles.presets — domain-specific helpers for building graphs.
+"""netbubbles.presets - domain-specific helpers for building graphs.
 
 Each submodule provides parsers and ``to_graph()`` builders for a specific
 data domain.  Import only what you need; submodules that depend on optional

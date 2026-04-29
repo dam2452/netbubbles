@@ -31,7 +31,7 @@ def _layer_color(depth: int) -> str:
 def parse_requirements(path: str | Path) -> Dict[str, List[str]]:
     """Parse a requirements.txt into ``{package: [deps]}``.
 
-    For requirements.txt this is flat — each package has no sub-deps
+    For requirements.txt this is flat - each package has no sub-deps
     listed, so each maps to an empty list.
     """
     deps: Dict[str, List[str]] = {}

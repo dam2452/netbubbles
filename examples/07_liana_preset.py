@@ -1,4 +1,4 @@
-"""Example 7: LIANA preset — simulated cell-cell communication data."""
+"""Example 7: LIANA preset - simulated cell-cell communication data."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -41,6 +41,6 @@ df = pd.DataFrame(rows)
 g = liana.to_graph(df, node_colors=COLORS)
 ax = nb.draw(g, title="LIANA Simulation", subtitle="200 random interactions")
 nb.add_legend(ax.figure, sorted(COLORS.keys()), COLORS)
-ax.figure.savefig(f"{OUT}/7_liana.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/7_liana.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/7_liana.png")
+print(f"  {OUT}/7_liana.svg")

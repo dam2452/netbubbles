@@ -1,4 +1,4 @@
-"""Example 14: Web link graph — page hyperlink network."""
+"""Example 14: Web link graph - page hyperlink network."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -26,6 +26,6 @@ links = {
 
 g = webgraph.from_links(links, root="home")
 ax = nb.draw(g, title="Web Link Graph", subtitle="11 pages, color by depth from home")
-ax.figure.savefig(f"{OUT}/14_webgraph.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/14_webgraph.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/14_webgraph.png")
+print(f"  {OUT}/14_webgraph.svg")

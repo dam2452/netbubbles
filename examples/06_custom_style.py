@@ -1,4 +1,4 @@
-"""Example 6: Custom Style — different edge colors and thicker arrows."""
+"""Example 6: Custom Style - different edge colors and thicker arrows."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -28,6 +28,6 @@ red_style = nb.Style(
 )
 ax = nb.draw(g, title="Custom Style", subtitle="Red-orange edge tiers, wider arrows",
              style=red_style)
-ax.figure.savefig(f"{OUT}/6_custom_style.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/6_custom_style.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/6_custom_style.png")
+print(f"  {OUT}/6_custom_style.svg")

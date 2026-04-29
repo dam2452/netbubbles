@@ -25,6 +25,6 @@ for ax, (title, pairs) in zip(axes, graphs):
     nb.draw(g, ax=ax, pos=pos, title=title)
 
 fig.tight_layout()
-fig.savefig(f"{OUT}/9_multipanel.png", dpi=150, bbox_inches="tight")
+fig.savefig(f"{OUT}/9_multipanel.svg", bbox_inches="tight")
 plt.close(fig)
-print(f"  {OUT}/9_multipanel.png")
+print(f"  {OUT}/9_multipanel.svg")

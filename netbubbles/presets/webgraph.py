@@ -1,4 +1,4 @@
-"""Web link graph helpers — page-to-page hyperlink networks."""
+"""Web link graph helpers - page-to-page hyperlink networks."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def from_links(
     link_dict:
         ``{page_url: [linked_page_urls]}`` mapping.
     root:
-        Root page — drawn larger. Computed automatically if *None*.
+        Root page - drawn larger. Computed automatically if *None*.
     label_max_length:
         Truncate labels longer than this.
     """

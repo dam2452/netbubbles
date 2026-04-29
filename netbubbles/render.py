@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib.patheffects as mpe
 import matplotlib.patches as mpatches
@@ -44,8 +44,8 @@ def draw(
         _draw_background(ax, pos, style)
     _draw_edges(ax, graph, pos, style, constrain_angles)
     _draw_nodes(ax, graph, pos, style)
-    content_top = _compute_content_top(pos, style)
     _finalize_axes(ax, pos, style)
+    content_top = _compute_content_top(ax, graph, pos, style)
     _draw_title(ax, title, subtitle, style, content_top)
     return ax
 
@@ -58,26 +58,61 @@ def add_legend(
     vertical: bool = False,
     fontsize: float = 15.0,
     legend_x: float = 0.80,
-    ncol: Optional[int] = None,
+    ncol: Optional[Union[int, str]] = None,
 ) -> None:
-    """Add a color legend to *fig*."""
-    handles = [
-        mpatches.Patch(color=colors.get(n, "#CCCCCC"), label=n.replace("_", " "))
-        for n in nodes
-    ]
+    """Add a color legend to *fig*.
+
+    ncol variants:
+      None       — auto: fit within 150 % of figure width
+      int        — fixed number of columns
+      "NxM"      — N columns, at most M items per column (clips handles list)
+    """
+    labels = [n.replace("_", " ") for n in nodes]
+    handles = [mpatches.Patch(color=colors.get(n, "#CCCCCC"), label=lbl)
+               for n, lbl in zip(nodes, labels)]
     if not handles:
         return
+
     if vertical:
         fig.legend(
             handles=handles, loc="center left", ncol=1,
             fontsize=fontsize, frameon=False, bbox_to_anchor=(legend_x, 0.5),
         )
-    else:
-        _ncol = ncol if ncol is not None else min(len(handles), 6)
-        fig.legend(
-            handles=handles, loc="lower center", ncol=_ncol,
-            fontsize=fontsize, frameon=False, bbox_to_anchor=(0.5, 0.01),
-        )
+        return
+
+    _ncol, handles = _resolve_ncol(ncol, handles, labels, fontsize, fig)
+    fig.legend(
+        handles=handles, loc="lower center", ncol=_ncol,
+        fontsize=fontsize, frameon=False, bbox_to_anchor=(0.5, 0.01),
+    )
+
+
+def _resolve_ncol(
+    ncol: Optional[Union[int, str]],
+    handles: list,
+    labels: List[str],
+    fontsize: float,
+    fig: plt.Figure,
+) -> Tuple[int, list]:
+    if isinstance(ncol, str):
+        parts = ncol.lower().split("x")
+        if len(parts) != 2 or not all(p.strip().isdigit() for p in parts):
+            raise ValueError(f"ncol string must be 'NxM', got: {ncol!r}")
+        cols, per_col = int(parts[0]), int(parts[1])
+        return cols, handles[: cols * per_col]
+
+    if isinstance(ncol, int):
+        return ncol, handles
+
+    # auto: estimate item width in points, fit within 150% of figure width
+    fig_width_pt = fig.get_figwidth() * 72.0
+    max_legend_pt = fig_width_pt * 1.25
+    handle_pt = 30.0  # patch + gap
+    char_pt = fontsize * 0.55
+    max_label_len = max((len(lbl) for lbl in labels), default=1)
+    item_pt = handle_pt + max_label_len * char_pt
+    auto_ncol = max(1, min(len(handles), int(max_legend_pt / item_pt)))
+    return auto_ncol, handles
 
 
 # ── Background ──────────────────────────────────────────────────
@@ -390,14 +425,44 @@ def _finalize_axes(
 
 
 def _compute_content_top(
+    ax: plt.Axes,
+    graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],
     style: Style,
 ) -> float:
     if style.background_circles:
-        return max(cy + r for _, cy, r, _ in style.background_circles)
-    if pos:
-        return max(abs(y) for _, y in pos.values())
-    return 1.0
+        base = max(cy + r for _, cy, r, _ in style.background_circles)
+    elif pos:
+        base = max(y for _, y in pos.values())
+    else:
+        return 1.0
+
+    ylim = ax.get_ylim()
+    fig_height_pt = ax.get_figure().get_figheight() * 72.0
+    ax_height_frac = ax.get_position().height
+    pts_per_data_unit = (fig_height_pt * ax_height_frac) / (ylim[1] - ylim[0])
+
+    top = base
+    self_loop_nodes = {e.source for e in graph.edges if e.is_self_loop}
+
+    for name, node in graph.nodes.items():
+        if name not in pos:
+            continue
+        x, y = pos[name]
+        dist = np.sqrt(x ** 2 + y ** 2)
+        ux, uy = (x / dist, y / dist) if dist > 1e-9 else (0.0, 1.0)
+
+        if node.label_position != "center" and uy > 0 and abs(uy) >= abs(ux):
+            fs = node.label_fontsize if node.label_fontsize is not None else style.label_fontsize
+            label_base_y = y + (node.radius + style.label_offset) * uy
+            top = max(top, label_base_y + fs * 1.2 / pts_per_data_unit)
+
+        if name in self_loop_nodes and uy > 0:
+            loop_r = node.radius * style.self_loop_radius_frac
+            loop_cy = y + (node.radius + loop_r) * uy
+            top = max(top, loop_cy + loop_r)
+
+    return top
 
 
 def _draw_title(
@@ -406,33 +471,27 @@ def _draw_title(
     style: Style,
     content_top: float,
 ) -> None:
-    xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     y_frac = (content_top - ylim[0]) / (ylim[1] - ylim[0])
     dpi_trans = ax.figure.dpi_scale_trans
     subtitle_fs = style.title_fontsize * style.subtitle_fontsize_ratio
 
-    sub_pt = style.subtitle_pad
-    title_pt = sub_pt + subtitle_fs * 1.2 + 2.0
+    # title sits title_pad pts above content_top
+    # subtitle sits subtitle_pad pts below the title (close to it)
+    title_offset_pt = style.title_pad
+    sub_offset_pt = style.title_pad - subtitle_fs * 1.2 - style.subtitle_pad
 
     if subtitle:
-        sub_trans = (
-            ax.transAxes
-            + ScaledTranslation(0, sub_pt / 72, dpi_trans)
-        )
         ax.text(
-            0.5, y_frac, subtitle, transform=sub_trans,
+            0.5, y_frac, subtitle,
+            transform=ax.transAxes + ScaledTranslation(0, sub_offset_pt / 72, dpi_trans),
             ha="center", va="bottom", clip_on=False,
             fontsize=subtitle_fs, fontweight="normal",
         )
     if title:
-        title_pt_final = title_pt if subtitle else sub_pt
-        title_trans = (
-            ax.transAxes
-            + ScaledTranslation(0, title_pt_final / 72, dpi_trans)
-        )
         ax.text(
-            0.5, y_frac, title, transform=title_trans,
+            0.5, y_frac, title,
+            transform=ax.transAxes + ScaledTranslation(0, title_offset_pt / 72, dpi_trans),
             ha="center", va="bottom", clip_on=False,
             fontsize=style.title_fontsize, fontweight="bold",
         )

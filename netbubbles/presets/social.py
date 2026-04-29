@@ -1,4 +1,4 @@
-"""Social network graph helpers — follower/mention/interaction graphs."""
+"""Social network graph helpers - follower/mention/interaction graphs."""
 
 from __future__ import annotations
 

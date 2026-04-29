@@ -37,6 +37,6 @@ g.add_edge("B cell", "Neutrophil", weight=1)
 
 ax = nb.draw(g, title="Cell Communication", subtitle="8 cell types, circular layout")
 nb.add_legend(ax.figure, sorted(COLORS.keys()), COLORS)
-ax.figure.savefig(f"{OUT}/1_circular.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/1_circular.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/1_circular.png")
+print(f"  {OUT}/1_circular.svg")

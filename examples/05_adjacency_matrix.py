@@ -1,4 +1,4 @@
-"""Example 5: Adjacency matrix constructor — from_adjacency()."""
+"""Example 5: Adjacency matrix constructor - from_adjacency()."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -21,6 +21,6 @@ g = nb.BubbleGraph.from_adjacency(
     threshold=0,
 )
 ax = nb.draw(g, title="from_adjacency()", subtitle="4x4 matrix")
-ax.figure.savefig(f"{OUT}/5_adjacency.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/5_adjacency.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/5_adjacency.png")
+print(f"  {OUT}/5_adjacency.svg")

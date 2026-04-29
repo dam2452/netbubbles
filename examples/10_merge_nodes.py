@@ -1,4 +1,4 @@
-"""Example 10: LIANA merge_nodes — merging subtypes."""
+"""Example 10: LIANA merge_nodes - merging subtypes."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -27,6 +27,6 @@ g_merged.nodes["Macrophage"].label = "MACs"
 pos = nb.focus(g_merged.node_names, center="Macrophage")
 ax = nb.draw(g_merged, pos=pos, title="After merge_nodes()",
              subtitle="Mac-A1 + Mac-A2 -> Macrophage", constrain_angles=False)
-ax.figure.savefig(f"{OUT}/10_merge.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/10_merge.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/10_merge.png")
+print(f"  {OUT}/10_merge.svg")

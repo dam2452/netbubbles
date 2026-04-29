@@ -1,4 +1,4 @@
-"""Example 2: Focus layout — one node in the center."""
+"""Example 2: Focus layout - one node in the center."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -33,6 +33,6 @@ g.add_edge("T cell", "Macrophage", weight=4)
 pos = nb.focus(g.node_names, center="Macrophage")
 ax = nb.draw(g, pos=pos, title="Focus: Macrophage", constrain_angles=False)
 nb.add_legend(ax.figure, g.node_names, {n: COLORS.get(n, "#911EB4") for n in g.node_names})
-ax.figure.savefig(f"{OUT}/2_focus.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/2_focus.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/2_focus.png")
+print(f"  {OUT}/2_focus.svg")

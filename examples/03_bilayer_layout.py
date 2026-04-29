@@ -1,4 +1,4 @@
-"""Example 3: Bilayer layout — two concentric rings."""
+"""Example 3: Bilayer layout - two concentric rings."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -42,6 +42,6 @@ all_colors = {**MAC_COLORS, **{n: COLORS[n] for n in OUTER}}
 ax = nb.draw(g, pos=pos, title="Bilayer: Macrophage Subtypes",
              style=style, constrain_angles=False)
 nb.add_legend(ax.figure, INNER + OUTER, all_colors)
-ax.figure.savefig(f"{OUT}/3_bilayer.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/3_bilayer.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/3_bilayer.png")
+print(f"  {OUT}/3_bilayer.svg")

@@ -1,4 +1,4 @@
-"""netbubbles — directed bubble-graph visualisation with curved arrows.
+"""netbubbles - directed bubble-graph visualisation with curved arrows.
 
 A Python library for creating publication-quality bubble-graph
 visualisations of directed weighted networks.

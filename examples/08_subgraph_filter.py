@@ -16,12 +16,12 @@ g_full = nb.BubbleGraph.from_weighted_edges(
 
 g_sub = g_full.subgraph(["A", "B", "C"])
 ax = nb.draw(g_sub, title="Subgraph", subtitle="Only A, B, C nodes")
-ax.figure.savefig(f"{OUT}/8_subgraph.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/8_subgraph.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/8_subgraph.png")
+print(f"  {OUT}/8_subgraph.svg")
 
 g_heavy = g_full.filter_edges(lambda e: e.weight >= 5)
 ax2 = nb.draw(g_heavy, title="Filtered Edges", subtitle="Only weight >= 5")
-ax2.figure.savefig(f"{OUT}/8b_filter.png", dpi=150, bbox_inches="tight")
+ax2.figure.savefig(f"{OUT}/8b_filter.svg", bbox_inches="tight")
 plt.close(ax2.figure)
-print(f"  {OUT}/8b_filter.png")
+print(f"  {OUT}/8b_filter.svg")

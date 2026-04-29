@@ -1,4 +1,4 @@
-"""Example 4: Quick constructor — from_weighted_edges()."""
+"""Example 4: Quick constructor - from_weighted_edges()."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -20,6 +20,6 @@ g = nb.BubbleGraph.from_weighted_edges(
     colors={"Alpha": "#FF6B6B", "Beta": "#4ECDC4", "Gamma": "#45B7D1"},
 )
 ax = nb.draw(g, title="from_weighted_edges()", subtitle="Quick constructor")
-ax.figure.savefig(f"{OUT}/4_weighted_edges.png", dpi=150, bbox_inches="tight")
+ax.figure.savefig(f"{OUT}/4_weighted_edges.svg", bbox_inches="tight")
 plt.close(ax.figure)
-print(f"  {OUT}/4_weighted_edges.png")
+print(f"  {OUT}/4_weighted_edges.svg")

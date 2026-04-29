@@ -1,4 +1,4 @@
-"""Citation network helpers — bibliographic reference graphs."""
+"""Citation network helpers - bibliographic reference graphs."""
 
 from __future__ import annotations
 
@@ -83,11 +83,11 @@ def to_graph(
         Dict mapping entry keys to lists of keys they cite.
         If *None*, no edges are created (just nodes).
     mode:
-        ``"paper"`` — one node per paper (default).
-        ``"author"`` — aggregate to first-author level.
+        ``"paper"`` - one node per paper (default).
+        ``"author"`` - aggregate to first-author level.
     color_by:
-        ``"year"`` — colour by publication year bucket.
-        ``"type"`` — colour by entry type (article, book, …).
+        ``"year"`` - colour by publication year bucket.
+        ``"type"`` - colour by entry type (article, book, …).
     """
     if mode == "author":
         return _author_graph(entries, citation_map, node_radius, node_colors)

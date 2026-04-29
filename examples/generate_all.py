@@ -27,4 +27,4 @@ for script in scripts:
     except Exception as e:
         print(f"ERROR: {e}")
 
-print(f"\nDone! {len(list(OUT.glob('*.png')))} images in {OUT}/")
+print(f"\nDone! {len(list(OUT.glob('*.svg')))} images in {OUT}/")

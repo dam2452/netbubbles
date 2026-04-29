@@ -527,7 +527,11 @@ def _compute_content_top(
     if style.background_circles:
         base = max(cy + r for _, cy, r, _ in style.background_circles)
     elif pos:
-        base = max(y for _, y in pos.values())
+        base = max(
+            y + graph.nodes[name].radius
+            for name, (_, y) in pos.items()
+            if name in graph.nodes
+        )
     else:
         return 1.0
 

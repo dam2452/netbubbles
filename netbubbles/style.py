@@ -50,6 +50,7 @@ class Style:  # pylint: disable=too-many-instance-attributes
     arrowhead_length: float = 0.23
     arrowhead_width: float = 0.14
     arrow_spread_rad: float = float(np.radians(8.0))
+    arrow_arc_limit_rad: float = float(np.radians(80.0))
     arrow_tail_hugs_border: bool = False
 
     # ── Self-loop ────────────────────────────────────────────────

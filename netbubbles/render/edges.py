@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import (
     Dict,
+    Set,
     Tuple,
 )
 
@@ -70,7 +71,9 @@ def draw_edges(
     max_w, min_w = max(weights), min(weights)
 
     regular = [e for e in top if not e.is_self_loop]
-    start_ang, end_ang = compute_spread_angles(regular, pos, constrain_angles, style.arrow_spread_rad)
+    edge_keys = {(e.source, e.target) for e in regular}
+    bidirectional = {k for k in edge_keys if (k[1], k[0]) in edge_keys}
+    start_ang, end_ang = compute_spread_angles(regular, pos, constrain_angles, style.arrow_spread_rad, style.arrow_arc_limit_rad)
     bow_signs = compute_bow_signs(regular, pos)
     bg_r = _bg_radius(style, pos)
 
@@ -78,7 +81,7 @@ def draw_edges(
         if edge.source not in pos or edge.target not in pos:
             continue
         _draw_single_edge(ax, edge, graph, pos, style, border_half, bg_r,
-                          min_w, max_w, start_ang, end_ang, bow_signs)
+                          min_w, max_w, start_ang, end_ang, bow_signs, bidirectional)
 
 
 def _draw_single_edge(  # pylint: disable=too-many-arguments
@@ -93,6 +96,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
     start_ang: Dict[Tuple[str, str], float],
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
+    bidirectional: Set[Tuple[str, str]],
 ) -> None:
     frac = (edge.weight - min_w) / (max_w - min_w + 1e-9)
     color, lw, alpha = _edge_style_params(edge, frac, style)
@@ -102,8 +106,10 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
     if edge.is_self_loop:
         draw_self_loop(ax, pos[edge.source], r_src, color, lw, alpha, style)
     else:
+        key = (edge.source, edge.target)
         _draw_directed_edge(ax, edge, pos, style, r_src, r_tgt, bg_r,
-                            color, lw, alpha, start_ang, end_ang, bow_signs)
+                            color, lw, alpha, start_ang, end_ang, bow_signs,
+                            key in bidirectional)
 
 
 def _draw_directed_edge(  # pylint: disable=too-many-arguments
@@ -116,6 +122,7 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     start_ang: Dict[Tuple[str, str], float],
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
+    is_bidirectional: bool,
 ) -> None:
     key = (edge.source, edge.target)
     sa = start_ang.get(key, inward_angle(pos[edge.source]))
@@ -123,5 +130,5 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     bow = bow_signs.get(key, 1.0)
     draw_arrow(
         ax, pos[edge.source], pos[edge.target],
-        r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style,
+        r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional,
     )

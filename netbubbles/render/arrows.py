@@ -29,12 +29,28 @@ def _bezier_ctrl(
     bow_sign: float,
     curve_strength: float,
     bg_radius: float,
+    is_bidirectional: bool,
 ) -> Tuple[float, float]:
+    mx = (start[0] + end[0]) / 2.0
+    my = (start[1] + end[1]) / 2.0
+    r1 = np.sqrt(p1[0] ** 2 + p1[1] ** 2) + 1e-9
+    r2 = np.sqrt(p2[0] ** 2 + p2[1] ** 2) + 1e-9
+    cos_angle = np.clip((p1[0] * p2[0] + p1[1] * p2[1]) / (r1 * r2), -1.0, 1.0)
+    closeness = (1.0 + cos_angle) / 2.0
     dx, dy = p2[0] - p1[0], p2[1] - p1[1]
     dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
     px, py = -dy / dist, dx / dist
-    cx = (start[0] + end[0]) / 2.0 + bow_sign * px * curve_strength * dist
-    cy = (start[1] + end[1]) / 2.0 + bow_sign * py * curve_strength * dist
+    if is_bidirectional:
+        bow_factor = 0.45 * closeness + 0.12
+        cx = mx + bow_sign * px * bow_factor * dist
+        cy = my + bow_sign * py * bow_factor * dist
+    else:
+        dynamic_pull = max(0.05, curve_strength * 0.4 * closeness)
+        cx = mx * (1.0 - dynamic_pull)
+        cy = my * (1.0 - dynamic_pull)
+        bow_factor = 0.12 * closeness + 0.04
+        cx += bow_sign * px * bow_factor * dist
+        cy += bow_sign * py * bow_factor * dist
     cd = np.sqrt(cx ** 2 + cy ** 2)
     if cd > bg_radius:
         cx, cy = cx * bg_radius / cd, cy * bg_radius / cd
@@ -60,10 +76,11 @@ def _compute_arrow_geometry(
     bg_radius: float,
     curve_strength: float,
     arrowhead_length: float,
+    is_bidirectional: bool,
 ) -> _ArrowGeometry:
     start = (p1[0] + r_start * np.cos(start_ang), p1[1] + r_start * np.sin(start_ang))
     end = (p2[0] + r_end * np.cos(end_ang), p2[1] + r_end * np.sin(end_ang))
-    ctrl = _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius)
+    ctrl = _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius, is_bidirectional)
     line_end = _line_end_before_tip(end, ctrl, arrowhead_length)
     return _ArrowGeometry(start=start, ctrl=ctrl, line_end=line_end, tip=end)
 
@@ -131,10 +148,11 @@ def draw_arrow(  # pylint: disable=too-many-arguments
     bg_radius: float,
     color: str, lw: float, alpha: float,
     style: Style,
+    is_bidirectional: bool = False,
 ) -> None:
     geom = _compute_arrow_geometry(
         p1, p2, r_start, r_end, start_ang, end_ang, bow_sign, bg_radius,
-        style.curve_strength, style.arrowhead_length,
+        style.curve_strength, style.arrowhead_length, is_bidirectional,
     )
     ax.add_patch(
         mpatches.PathPatch(

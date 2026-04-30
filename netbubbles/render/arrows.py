@@ -35,24 +35,24 @@ def _bezier_ctrl(
 ) -> Tuple[float, float]:
     mx = (start[0] + end[0]) / 2.0
     my = (start[1] + end[1]) / 2.0
+    # perpendicular to start→end chord (unit vector) — ctrl on this bisector = symmetric apex
+    dx, dy = end[0] - start[0], end[1] - start[1]
+    chord = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
+    px, py = -dy / chord, dx / chord
     r1 = np.sqrt(p1[0] ** 2 + p1[1] ** 2) + 1e-9
     r2 = np.sqrt(p2[0] ** 2 + p2[1] ** 2) + 1e-9
     cos_angle = np.clip((p1[0] * p2[0] + p1[1] * p2[1]) / (r1 * r2), -1.0, 1.0)
     closeness = (1.0 + cos_angle) / 2.0
-    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
-    dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
-    px, py = -dy / dist, dx / dist
     if is_bidirectional:
-        bow_factor = 0.45 * closeness + 0.12
-        cx = mx + bow_sign * px * bow_factor * dist
-        cy = my + bow_sign * py * bow_factor * dist
+        bow_offset = bow_sign * (0.45 * closeness + 0.12) * chord
     else:
-        dynamic_pull = max(0.05, curve_strength * 0.4 * closeness)
-        cx = mx * (1.0 - dynamic_pull)
-        cy = my * (1.0 - dynamic_pull)
-        bow_factor = 0.12 * closeness + 0.04
-        cx += bow_sign * px * bow_factor * dist
-        cy += bow_sign * py * bow_factor * dist
+        # inward pull projected onto perp-bisector direction so apex stays symmetric
+        md = np.sqrt(mx ** 2 + my ** 2) + 1e-9
+        inward_proj = (-mx / md) * px + (-my / md) * py
+        pull = curve_strength * 0.4 * closeness * chord * inward_proj
+        bow_offset = bow_sign * (0.12 * closeness + 0.04) * chord + pull
+    cx = mx + px * bow_offset
+    cy = my + py * bow_offset
     cd = np.sqrt(cx ** 2 + cy ** 2)
     if cd > bg_radius:
         cx, cy = cx * bg_radius / cd, cy * bg_radius / cd

@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 from typing import (
     Dict,
-    List,
     Optional,
     Set,
     Tuple,
@@ -20,6 +19,7 @@ from ..graph import (
 )
 from ..style import Style
 from .arrows import (
+    _bezier_ctrl,
     draw_arrow,
     draw_self_loop,
 )
@@ -77,6 +77,50 @@ def _adjust_ctrl_avoidance(
     return (cx, cy)
 
 
+def _adjust_ctrls_for_overlap(
+    ctrl_overrides: Dict[Tuple[str, str], Tuple[float, float]],
+    edge_endpoints: Dict[Tuple[str, str], Tuple[Tuple[float, float], Tuple[float, float]]],
+    bg_radius: float,
+    overlap_threshold: float = 0.18,
+    bow_step: float = 0.07,
+    iterations: int = 8,
+) -> Dict[Tuple[str, str], Tuple[float, float]]:
+    keys = list(ctrl_overrides.keys())
+    sample_ts = [0.25, 0.5, 0.75]
+    result = dict(ctrl_overrides)
+
+    for _ in range(iterations):
+        for i in range(len(keys)):
+            for j in range(i + 1, len(keys)):
+                ka, kb = keys[i], keys[j]
+                start_a, end_a = edge_endpoints[ka]
+                start_b, end_b = edge_endpoints[kb]
+                ctrl_a, ctrl_b = result[ka], result[kb]
+                hits = sum(
+                    1 for t in sample_ts
+                    if np.sqrt(
+                        (_bezier_point(start_a, ctrl_a, end_a, t)[0] - _bezier_point(start_b, ctrl_b, end_b, t)[0]) ** 2 +
+                        (_bezier_point(start_a, ctrl_a, end_a, t)[1] - _bezier_point(start_b, ctrl_b, end_b, t)[1]) ** 2
+                    ) < overlap_threshold
+                )
+                if hits == 0:
+                    continue
+                cx, cy = result[kb]
+                start_p, end_p = edge_endpoints[kb]
+                mx = (start_p[0] + end_p[0]) / 2.0
+                my = (start_p[1] + end_p[1]) / 2.0
+                bx, by = cx - mx, cy - my
+                bd = np.sqrt(bx ** 2 + by ** 2) + 1e-9
+                step = bow_step * hits
+                nx, ny = cx + bx / bd * step, cy + by / bd * step
+                nd = np.sqrt(nx ** 2 + ny ** 2) + 1e-9
+                if nd > bg_radius:
+                    nx, ny = nx * bg_radius / nd, ny * bg_radius / nd
+                result[kb] = (nx, ny)
+
+    return result
+
+
 def _bg_radius(
     style: Style,
     pos: Dict[str, Tuple[float, float]],
@@ -125,11 +169,34 @@ def draw_edges(
     bow_signs = compute_bow_signs(regular, pos)
     bg_r = _bg_radius(style, pos)
 
-    for edge in top:
+    ctrl_overrides: Dict[Tuple[str, str], Tuple[float, float]] = {}
+    edge_endpoints: Dict[Tuple[str, str], Tuple[Tuple[float, float], Tuple[float, float]]] = {}
+
+    for edge in regular:
+        if edge.source not in pos or edge.target not in pos:
+            continue
+        key = (edge.source, edge.target)
+        r_src = graph.nodes[edge.source].radius + (border_half if style.arrow_tail_hugs_border else 0.0)
+        r_tgt = graph.nodes[edge.target].radius + border_half
+        sa = start_ang.get(key, inward_angle(pos[edge.source]))
+        ea = end_ang.get(key, inward_angle(pos[edge.target]))
+        bow = bow_signs.get(key, 1.0)
+        p1, p2 = pos[edge.source], pos[edge.target]
+        start_pt = (p1[0] + r_src * np.cos(sa), p1[1] + r_src * np.sin(sa))
+        end_pt = (p2[0] + r_tgt * np.cos(ea), p2[1] + r_tgt * np.sin(ea))
+        ctrl = _bezier_ctrl(start_pt, end_pt, p1, p2, bow, style.curve_strength, bg_r, key in bidirectional)
+        ctrl = _adjust_ctrl_avoidance(ctrl, start_pt, end_pt, edge.source, edge.target, graph, pos)
+        ctrl_overrides[key] = ctrl
+        edge_endpoints[key] = (start_pt, end_pt)
+
+    ctrl_overrides = _adjust_ctrls_for_overlap(ctrl_overrides, edge_endpoints, bg_r)
+
+    for edge in reversed(top):
         if edge.source not in pos or edge.target not in pos:
             continue
         _draw_single_edge(ax, edge, graph, pos, style, border_half, bg_r,
-                          min_w, max_w, start_ang, end_ang, bow_signs, bidirectional)
+                          min_w, max_w, start_ang, end_ang, bow_signs, bidirectional,
+                          ctrl_overrides)
 
 
 def _draw_single_edge(  # pylint: disable=too-many-arguments
@@ -145,6 +212,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
     bidirectional: Set[Tuple[str, str]],
+    ctrl_overrides: Dict[Tuple[str, str], Tuple[float, float]],
 ) -> None:
     frac = (edge.weight - min_w) / (max_w - min_w + 1e-9)
     color, lw, alpha = _edge_style_params(edge, frac, style)
@@ -155,15 +223,14 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
         draw_self_loop(ax, pos[edge.source], r_src, color, lw, alpha, style)
     else:
         key = (edge.source, edge.target)
-        _draw_directed_edge(ax, edge, graph, pos, style, r_src, r_tgt, bg_r,
+        _draw_directed_edge(ax, edge, pos, style, r_src, r_tgt, bg_r,
                             color, lw, alpha, start_ang, end_ang, bow_signs,
-                            key in bidirectional)
+                            key in bidirectional, ctrl_overrides.get(key))
 
 
 def _draw_directed_edge(  # pylint: disable=too-many-arguments
     ax: plt.Axes,
     edge: Edge,
-    graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],
     style: Style,
     r_src: float, r_tgt: float, bg_r: float,
@@ -172,17 +239,13 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
     is_bidirectional: bool,
+    ctrl_override: Optional[Tuple[float, float]],
 ) -> None:
-    from .arrows import _bezier_ctrl  # pylint: disable=import-outside-toplevel
     key = (edge.source, edge.target)
     sa = start_ang.get(key, inward_angle(pos[edge.source]))
     ea = end_ang.get(key, inward_angle(pos[edge.target]))
     bow = bow_signs.get(key, 1.0)
     p1, p2 = pos[edge.source], pos[edge.target]
-    start_pt = (p1[0] + r_src * np.cos(sa), p1[1] + r_src * np.sin(sa))
-    end_pt = (p2[0] + r_tgt * np.cos(ea), p2[1] + r_tgt * np.sin(ea))
-    ctrl = _bezier_ctrl(start_pt, end_pt, p1, p2, bow, style.curve_strength, bg_r, is_bidirectional)
-    ctrl = _adjust_ctrl_avoidance(ctrl, start_pt, end_pt, edge.source, edge.target, graph, pos)
     draw_arrow(
-        ax, p1, p2, r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional, ctrl,
+        ax, p1, p2, r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional, ctrl_override,
     )

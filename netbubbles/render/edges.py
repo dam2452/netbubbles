@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 from typing import (
     Dict,
+    List,
+    Optional,
     Set,
     Tuple,
 )
@@ -27,6 +29,52 @@ from .geometry import (
     inward_angle,
 )
 from .nodes import node_border_half_data
+
+
+def _bezier_point(
+    start: Tuple[float, float],
+    ctrl: Tuple[float, float],
+    end: Tuple[float, float],
+    t: float,
+) -> Tuple[float, float]:
+    mt = 1.0 - t
+    return (mt * mt * start[0] + 2 * mt * t * ctrl[0] + t * t * end[0],
+            mt * mt * start[1] + 2 * mt * t * ctrl[1] + t * t * end[1])
+
+
+def _adjust_ctrl_avoidance(
+    ctrl: Tuple[float, float],
+    start: Tuple[float, float],
+    end: Tuple[float, float],
+    src_name: str,
+    tgt_name: str,
+    graph: "BubbleGraph",
+    pos: Dict[str, Tuple[float, float]],
+    margin: float = 0.08,
+    iterations: int = 4,
+) -> Tuple[float, float]:
+    cx, cy = ctrl
+    sample_ts = [0.2, 0.4, 0.5, 0.6, 0.8]
+    for _ in range(iterations):
+        push_x, push_y = 0.0, 0.0
+        for t in sample_ts:
+            bx, by = _bezier_point(start, (cx, cy), end, t)
+            for name, node_pos in pos.items():
+                if name in (src_name, tgt_name):
+                    continue
+                nx, ny = node_pos
+                r = graph.nodes[name].radius + margin
+                dx, dy = bx - nx, by - ny
+                dist = np.sqrt(dx * dx + dy * dy) + 1e-9
+                if dist < r:
+                    strength = (r - dist) / r
+                    push_x += dx / dist * strength
+                    push_y += dy / dist * strength
+        if abs(push_x) < 1e-6 and abs(push_y) < 1e-6:
+            break
+        cx += push_x * 0.5
+        cy += push_y * 0.5
+    return (cx, cy)
 
 
 def _bg_radius(
@@ -107,7 +155,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
         draw_self_loop(ax, pos[edge.source], r_src, color, lw, alpha, style)
     else:
         key = (edge.source, edge.target)
-        _draw_directed_edge(ax, edge, pos, style, r_src, r_tgt, bg_r,
+        _draw_directed_edge(ax, edge, graph, pos, style, r_src, r_tgt, bg_r,
                             color, lw, alpha, start_ang, end_ang, bow_signs,
                             key in bidirectional)
 
@@ -115,6 +163,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
 def _draw_directed_edge(  # pylint: disable=too-many-arguments
     ax: plt.Axes,
     edge: Edge,
+    graph: BubbleGraph,
     pos: Dict[str, Tuple[float, float]],
     style: Style,
     r_src: float, r_tgt: float, bg_r: float,
@@ -124,11 +173,16 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     bow_signs: Dict[Tuple[str, str], float],
     is_bidirectional: bool,
 ) -> None:
+    from .arrows import _bezier_ctrl  # pylint: disable=import-outside-toplevel
     key = (edge.source, edge.target)
     sa = start_ang.get(key, inward_angle(pos[edge.source]))
     ea = end_ang.get(key, inward_angle(pos[edge.target]))
     bow = bow_signs.get(key, 1.0)
+    p1, p2 = pos[edge.source], pos[edge.target]
+    start_pt = (p1[0] + r_src * np.cos(sa), p1[1] + r_src * np.sin(sa))
+    end_pt = (p2[0] + r_tgt * np.cos(ea), p2[1] + r_tgt * np.sin(ea))
+    ctrl = _bezier_ctrl(start_pt, end_pt, p1, p2, bow, style.curve_strength, bg_r, is_bidirectional)
+    ctrl = _adjust_ctrl_avoidance(ctrl, start_pt, end_pt, edge.source, edge.target, graph, pos)
     draw_arrow(
-        ax, pos[edge.source], pos[edge.target],
-        r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional,
+        ax, p1, p2, r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional, ctrl,
     )

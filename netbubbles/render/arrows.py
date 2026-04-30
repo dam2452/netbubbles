@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
+from typing import Optional
+
 import matplotlib.patches as mpatches
 from matplotlib.path import Path as MplPath
 import matplotlib.pyplot as plt
@@ -77,10 +79,11 @@ def _compute_arrow_geometry(
     curve_strength: float,
     arrowhead_length: float,
     is_bidirectional: bool,
+    ctrl_override: Optional[Tuple[float, float]] = None,
 ) -> _ArrowGeometry:
     start = (p1[0] + r_start * np.cos(start_ang), p1[1] + r_start * np.sin(start_ang))
     end = (p2[0] + r_end * np.cos(end_ang), p2[1] + r_end * np.sin(end_ang))
-    ctrl = _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius, is_bidirectional)
+    ctrl = ctrl_override if ctrl_override is not None else _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius, is_bidirectional)
     line_end = _line_end_before_tip(end, ctrl, arrowhead_length)
     return _ArrowGeometry(start=start, ctrl=ctrl, line_end=line_end, tip=end)
 
@@ -149,10 +152,12 @@ def draw_arrow(  # pylint: disable=too-many-arguments
     color: str, lw: float, alpha: float,
     style: Style,
     is_bidirectional: bool = False,
+    ctrl_override: Optional[Tuple[float, float]] = None,
 ) -> None:
     geom = _compute_arrow_geometry(
         p1, p2, r_start, r_end, start_ang, end_ang, bow_sign, bg_radius,
         style.curve_strength, style.arrowhead_length, is_bidirectional,
+        ctrl_override,
     )
     ax.add_patch(
         mpatches.PathPatch(

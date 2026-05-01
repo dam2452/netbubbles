@@ -43,7 +43,7 @@ g_temp = social.from_edge_list(edges)
 clusters = social.detect_clusters(g_temp)
 
 g = social.from_edge_list(edges, clusters=clusters)
-ax = nb.draw(g, title="Social Network", subtitle="10 users, color by community")
+ax = nb.draw(g, title="Social Network", subtitle="10 users, color by community", style=nb.Style(high_density="off"))
 ax.figure.savefig(f"{OUT}/15_social_network.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/15_social_network.svg")

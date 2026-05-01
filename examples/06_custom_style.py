@@ -38,6 +38,7 @@ neuro_style = nb.Style(
     arrowhead_length=0.30,
     arrowhead_width=0.18,
     background_color="#F4F6F9",
+    high_density="off",
 )
 ax = nb.draw(
     g, title="Brain Region Connectivity",

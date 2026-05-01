@@ -184,10 +184,21 @@ def draw_edges(
     dense = _resolve_high_density(style, graph, pos)
 
     edge_keys = {(e.source, e.target) for e in regular}
-    bidirectional = {k for k in edge_keys if (k[1], k[0]) in edge_keys} if dense else set()
+    bidirectional = {k for k in edge_keys if (k[1], k[0]) in edge_keys}
+
+    n_tiers = len(style.edge_tiers)
+    tier_of: Dict[Tuple[str, str], int] = {
+        (e.source, e.target): min(
+            int((1.0 - (e.weight - min_w) / (max_w - min_w + 1e-9)) * n_tiers),
+            n_tiers - 1,
+        )
+        for e in regular
+    } if dense else {}
+
     start_ang, end_ang = compute_spread_angles(
         regular, pos, constrain_angles,
         style.arrow_spread_rad, style.arrow_arc_limit_rad, dense,
+        tier_of if dense else None,
     )
     bow_signs = compute_bow_signs(regular, pos, dense)
     bg_r = _bg_radius(style, pos)
@@ -213,7 +224,7 @@ def draw_edges(
             edge_endpoints[key] = (start_pt, end_pt)
         ctrl_overrides = _adjust_ctrls_for_overlap(ctrl_overrides, edge_endpoints, bg_r)
 
-    for edge in reversed(top):
+    for edge in (reversed(top) if dense else top):
         if edge.source not in pos or edge.target not in pos:
             continue
         _draw_single_edge(ax, edge, graph, pos, style, border_half, bg_r,

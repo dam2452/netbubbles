@@ -31,6 +31,7 @@ g = nb.BubbleGraph.from_adjacency(
 ax = nb.draw(
     g, title="Flight Hub Connectivity",
     subtitle="London · New York · Dubai · Singapore",
+    style=nb.Style(high_density="off"),
 )
 ax.figure.savefig(f"{OUT}/5_adjacency.svg", bbox_inches="tight")
 plt.close(ax.figure)

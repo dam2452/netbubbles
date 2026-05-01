@@ -37,7 +37,7 @@ citation_map = {
 }
 
 g = citations.to_graph(entries, citation_map=citation_map, mode="paper")
-ax = nb.draw(g, title="Citation Network", subtitle="10 papers, color by year")
+ax = nb.draw(g, title="Citation Network", subtitle="10 papers, color by year", style=nb.Style(high_density="off"))
 ax.figure.savefig(f"{OUT}/11_citation_network.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/11_citation_network.svg")
@@ -46,7 +46,7 @@ print(f"  {OUT}/11_citation_network.svg")
 _PALETTE = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#A65628", "#F781BF", "#999999"]
 g_author = citations.to_graph(entries, citation_map=citation_map, mode="author")
 author_colors = {a: _PALETTE[i % len(_PALETTE)] for i, a in enumerate(sorted(g_author.nodes.keys()))}
-ax2 = nb.draw(g_author, title="Author Citation Network", subtitle="Aggregated by first author")
+ax2 = nb.draw(g_author, title="Author Citation Network", subtitle="Aggregated by first author", style=nb.Style(high_density="off"))
 ax2.figure.savefig(f"{OUT}/11b_author_citations.svg", bbox_inches="tight")
 plt.close(ax2.figure)
 print(f"  {OUT}/11b_author_citations.svg")

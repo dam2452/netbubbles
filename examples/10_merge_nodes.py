@@ -32,6 +32,7 @@ pos = nb.focus(g_merged.node_names, center="Macrophage")
 ax = nb.draw(
     g_merged, pos=pos, title="After merge_nodes()",
     subtitle="Mac-A1 + Mac-A2 -> Macrophage", constrain_angles=False,
+    style=nb.Style(high_density="off"),
 )
 ax.figure.savefig(f"{OUT}/10_merge.svg", bbox_inches="tight")
 plt.close(ax.figure)

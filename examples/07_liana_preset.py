@@ -41,7 +41,7 @@ for _ in range(200):
 df = pd.DataFrame(rows)
 
 g = liana.to_graph(df, node_colors=COLORS)
-ax = nb.draw(g, title="LIANA Simulation", subtitle="200 random interactions")
+ax = nb.draw(g, title="LIANA Simulation", subtitle="200 random interactions", style=nb.Style(high_density="off"))
 nb.add_legend(ax.figure, sorted(COLORS.keys()), COLORS)
 ax.figure.savefig(f"{OUT}/7_liana.svg", bbox_inches="tight")
 plt.close(ax.figure)

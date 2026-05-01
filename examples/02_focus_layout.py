@@ -41,6 +41,7 @@ ax = nb.draw(
     g, pos=pos, title="Supply Chain Hub",
     subtitle="Central warehouse: inbound vs outbound flows",
     constrain_angles=False,
+    style=nb.Style(high_density="off"),
 )
 nb.add_legend(
     ax.figure, g.node_names,

@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import (
     Dict,
     List,
+    Optional,
     Tuple,
 )
 
@@ -83,6 +84,7 @@ def compute_spread_angles(
     arrow_spread_rad: float,
     arrow_arc_limit_rad: float = float(np.pi),
     dense: bool = True,
+    tier_of: Optional[Dict[Tuple[str, str], int]] = None,
 ) -> Tuple[Dict[Tuple[str, str], float], Dict[Tuple[str, str], float]]:
     outgoing: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
     incoming: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
@@ -114,24 +116,40 @@ def compute_spread_angles(
             if len(all_edges) < 2:
                 continue
 
-            def _nat(item: Tuple[str, Tuple[str, str]]) -> float:
+            def _nat(item: Tuple[str, Tuple[str, str]], _inward: float = inward) -> float:
                 direction, edge = item
                 return natural_angle(pos, edge[0], edge[1]) if direction == "out" else natural_angle(pos, edge[1], edge[0])
 
-            def _sort_key(item: Tuple[str, Tuple[str, str]]) -> float:
-                diff = (_nat(item) - inward + np.pi) % (2 * np.pi) - np.pi
+            def _sort_key(item: Tuple[str, Tuple[str, str]], _inward: float = inward) -> float:
+                diff = (_nat(item) - _inward + np.pi) % (2 * np.pi) - np.pi
                 return float(diff)
 
-            all_edges.sort(key=_sort_key)
-            n = len(all_edges)
-            half = (n - 1) / 2.0
-            for i, (direction, edge) in enumerate(all_edges):
-                offset = (i - half) * arrow_spread_rad
-                angle = _clamp_to_arc(inward + offset, inward, arrow_arc_limit_rad)
-                if direction == "out":
-                    start[edge] = angle
-                else:
-                    end[edge] = angle
+            if tier_of is not None:
+                tiers: Dict[int, List[Tuple[str, Tuple[str, str]]]] = defaultdict(list)
+                for item in all_edges:
+                    tiers[tier_of.get(item[1], 0)].append(item)
+                for tier_edges in tiers.values():
+                    tier_edges.sort(key=_sort_key)
+                    n = len(tier_edges)
+                    half = (n - 1) / 2.0
+                    for i, (direction, edge) in enumerate(tier_edges):
+                        offset = (i - half) * arrow_spread_rad
+                        angle = _clamp_to_arc(inward + offset, inward, arrow_arc_limit_rad)
+                        if direction == "out":
+                            start[edge] = angle
+                        else:
+                            end[edge] = angle
+            else:
+                all_edges.sort(key=_sort_key)
+                n = len(all_edges)
+                half = (n - 1) / 2.0
+                for i, (direction, edge) in enumerate(all_edges):
+                    offset = (i - half) * arrow_spread_rad
+                    angle = _clamp_to_arc(inward + offset, inward, arrow_arc_limit_rad)
+                    if direction == "out":
+                        start[edge] = angle
+                    else:
+                        end[edge] = angle
     else:
         for e in edges:
             if e.source in pos and e.target in pos:

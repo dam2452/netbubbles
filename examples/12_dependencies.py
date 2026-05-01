@@ -22,7 +22,7 @@ deps = {
 }
 
 g = dependencies.to_graph(deps, root="flask")
-ax = nb.draw(g, title="Software Dependencies", subtitle="Flask dependency tree")
+ax = nb.draw(g, title="Software Dependencies", subtitle="Flask dependency tree", style=nb.Style(high_density="off"))
 ax.figure.savefig(f"{OUT}/12_dependencies.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/12_dependencies.svg")

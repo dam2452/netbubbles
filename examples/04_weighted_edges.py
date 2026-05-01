@@ -29,6 +29,7 @@ g = nb.BubbleGraph.from_weighted_edges(
 ax = nb.draw(
     g, title="Global Trade Flows",
     subtitle="Inter-regional merchandise trade volumes",
+    style=nb.Style(high_density="off"),
 )
 ax.figure.savefig(f"{OUT}/4_weighted_edges.svg", bbox_inches="tight")
 plt.close(ax.figure)

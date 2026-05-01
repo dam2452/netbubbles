@@ -38,7 +38,7 @@ g.add_edge("Endothelial", "Fibroblast", weight=2)
 g.add_edge("Dendritic", "T cell", weight=5)
 g.add_edge("B cell", "Neutrophil", weight=1)
 
-ax = nb.draw(g, title="Cell Communication", subtitle="8 cell types, circular layout")
+ax = nb.draw(g, title="Cell Communication", subtitle="8 cell types, circular layout", style=nb.Style(high_density="off"))
 nb.add_legend(ax.figure, sorted(COLORS.keys()), COLORS)
 ax.figure.savefig(f"{OUT}/1_circular.svg", bbox_inches="tight")
 plt.close(ax.figure)

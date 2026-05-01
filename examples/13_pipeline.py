@@ -23,7 +23,7 @@ steps = [
 ]
 
 g = pipeline.to_graph(steps)
-ax = nb.draw(g, title="Data Pipeline", subtitle="ETL flow: extract -> transform -> load")
+ax = nb.draw(g, title="Data Pipeline", subtitle="ETL flow: extract -> transform -> load", style=nb.Style(high_density="off"))
 ax.figure.savefig(f"{OUT}/13_pipeline.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/13_pipeline.svg")

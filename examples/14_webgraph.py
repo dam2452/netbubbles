@@ -27,7 +27,7 @@ links = {
 }
 
 g = webgraph.from_links(links, root="home")
-ax = nb.draw(g, title="Web Link Graph", subtitle="11 pages, color by depth from home")
+ax = nb.draw(g, title="Web Link Graph", subtitle="11 pages, color by depth from home", style=nb.Style(high_density="off"))
 ax.figure.savefig(f"{OUT}/14_webgraph.svg", bbox_inches="tight")
 plt.close(ax.figure)
 print(f"  {OUT}/14_webgraph.svg")

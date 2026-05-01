@@ -55,7 +55,7 @@ fig, axes = plt.subplots(1, 3, figsize=(21, 7))
 for ax, (title, pairs) in zip(axes, panels):
     g = nb.BubbleGraph.from_weighted_edges(pairs, colors=COLORS)
     pos = nb.circular(g.node_names)
-    nb.draw(g, ax=ax, pos=pos, title=title)
+    nb.draw(g, ax=ax, pos=pos, title=title, style=nb.Style(high_density="off"))
 
 fig.tight_layout()
 fig.savefig(f"{OUT}/9_multipanel.svg", bbox_inches="tight")

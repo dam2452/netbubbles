@@ -43,6 +43,7 @@ style = nb.Style(
     arrowhead_length=0.115,
     arrowhead_width=0.07,
     title_fontsize=22,
+    high_density="off",
 )
 all_colors = {**PRED_COLORS, **PREY_COLORS}
 ax = nb.draw(

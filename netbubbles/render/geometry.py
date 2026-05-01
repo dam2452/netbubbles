@@ -100,11 +100,17 @@ def compute_spread_angles(
         for e in edges:
             if e.source in pos and e.target in pos:
                 key = (e.source, e.target)
-                start[key] = inward_angle(pos[e.source])
-                end[key] = inward_angle(pos[e.target])
+                start[key] = natural_angle(pos, e.source, e.target)
+                end[key] = natural_angle(pos, e.target, e.source)
 
         if not constrain:
             return start, end
+
+        for e in edges:
+            if e.source in pos and e.target in pos:
+                key = (e.source, e.target)
+                start[key] = inward_angle(pos[e.source])
+                end[key] = inward_angle(pos[e.target])
 
         all_nodes = set(outgoing) | set(incoming)
         for node in all_nodes:

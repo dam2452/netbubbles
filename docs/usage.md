@@ -108,6 +108,31 @@ my_style = Style(
 ax = nb.draw(graph, style=my_style, title="Custom Styled")
 ```
 
+### Dense Mode (`high_density`)
+
+`Style(high_density=...)` controls how edges are drawn when nodes are tightly packed.
+
+| Value | Behavior |
+|-------|----------|
+| `"auto"` | Default. Automatically detects layout density and picks `"on"` or `"off"`. |
+| `"off"` | Classic rendering: simple midpoint Bézier offset, angles toward the partner node, relaxed for separation. Use for sparse, well-spaced graphs. |
+| `"on"` | Dense rendering: inward-pulling Bézier curves, angles fanning from the inward direction grouped by weight tier, node avoidance pass, and overlap separation pass. Use when nodes are crowded or overlapping. |
+
+**Auto detection** compares inter-node gaps to node radii. If any pair of nodes has a gap smaller than 30% of the smaller radius, dense mode activates.
+
+**Angle spreading in dense mode** works per weight tier: thick edges (high weight) are spread independently from thin edges — each tier fans out from the node's inward angle as if the other tiers don't exist. This keeps heavy connections visually dominant and avoids them being pushed aside by a large number of lighter edges.
+
+```python
+# Explicit off — same output as classic rendering
+Style(high_density="off")
+
+# Explicit on — full dense pipeline
+Style(high_density="on")
+
+# Auto — let netbubbles decide (default)
+Style(high_density="auto")
+```
+
 ### Graph Operations
 
 ```python

@@ -16,6 +16,32 @@ def inward_angle(p: Tuple[float, float]) -> float:
     return float(np.arctan2(-p[1], -p[0]))
 
 
+def is_dense_layout(
+    pos: Dict[str, Tuple[float, float]],
+    radii: Dict[str, float],
+    gap_threshold: float = 0.3,
+) -> bool:
+    items = list(pos.items())
+    n = len(items)
+    if n < 2:
+        return False
+    for i in range(n):
+        name_i, (xi, yi) = items[i]
+        ri = radii.get(name_i, 0.0)
+        for j in range(i + 1, n):
+            name_j, (xj, yj) = items[j]
+            rj = radii.get(name_j, 0.0)
+            dist = np.sqrt((xi - xj) ** 2 + (yi - yj) ** 2)
+            gap = dist - ri - rj
+            smaller = min(ri, rj)
+            if smaller < 1e-9:
+                if gap <= 0:
+                    return True
+            elif gap / smaller < gap_threshold:
+                return True
+    return False
+
+
 def _clamp_to_arc(angle: float, center: float, limit: float) -> float:
     diff = (angle - center + np.pi) % (2 * np.pi) - np.pi
     clamped = np.clip(diff, -limit, limit)
@@ -56,6 +82,7 @@ def compute_spread_angles(
     constrain: bool,
     arrow_spread_rad: float,
     arrow_arc_limit_rad: float = float(np.pi),
+    dense: bool = True,
 ) -> Tuple[Dict[Tuple[str, str], float], Dict[Tuple[str, str], float]]:
     outgoing: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
     incoming: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
@@ -67,45 +94,82 @@ def compute_spread_angles(
     start: Dict[Tuple[str, str], float] = {}
     end: Dict[Tuple[str, str], float] = {}
 
-    for e in edges:
-        if e.source in pos and e.target in pos:
-            key = (e.source, e.target)
-            start[key] = inward_angle(pos[e.source])
-            end[key] = inward_angle(pos[e.target])
+    if dense:
+        for e in edges:
+            if e.source in pos and e.target in pos:
+                key = (e.source, e.target)
+                start[key] = inward_angle(pos[e.source])
+                end[key] = inward_angle(pos[e.target])
 
-    if not constrain:
-        return start, end
+        if not constrain:
+            return start, end
 
-    all_nodes = set(outgoing) | set(incoming)
-    for node in all_nodes:
-        inward = inward_angle(pos[node])
+        all_nodes = set(outgoing) | set(incoming)
+        for node in all_nodes:
+            inward = inward_angle(pos[node])
+            all_edges: List[Tuple[str, Tuple[str, str]]] = (
+                [("out", e) for e in outgoing.get(node, [])]
+                + [("in", e) for e in incoming.get(node, [])]
+            )
+            if len(all_edges) < 2:
+                continue
 
-        out_edges = outgoing.get(node, [])
-        in_edges = incoming.get(node, [])
-        all_edges: List[Tuple[str, Tuple[str, str]]] = (
-            [("out", e) for e in out_edges] + [("in", e) for e in in_edges]
-        )
-        if len(all_edges) < 2:
-            continue
+            def _nat(item: Tuple[str, Tuple[str, str]]) -> float:
+                direction, edge = item
+                return natural_angle(pos, edge[0], edge[1]) if direction == "out" else natural_angle(pos, edge[1], edge[0])
 
-        def _nat(item: Tuple[str, Tuple[str, str]]) -> float:
-            direction, edge = item
-            return natural_angle(pos, edge[0], edge[1]) if direction == "out" else natural_angle(pos, edge[1], edge[0])
+            def _sort_key(item: Tuple[str, Tuple[str, str]]) -> float:
+                diff = (_nat(item) - inward + np.pi) % (2 * np.pi) - np.pi
+                return float(diff)
 
-        def _sort_key(item: Tuple[str, Tuple[str, str]]) -> float:
-            diff = (_nat(item) - inward + np.pi) % (2 * np.pi) - np.pi
-            return float(diff)
+            all_edges.sort(key=_sort_key)
+            n = len(all_edges)
+            half = (n - 1) / 2.0
+            for i, (direction, edge) in enumerate(all_edges):
+                offset = (i - half) * arrow_spread_rad
+                angle = _clamp_to_arc(inward + offset, inward, arrow_arc_limit_rad)
+                if direction == "out":
+                    start[edge] = angle
+                else:
+                    end[edge] = angle
+    else:
+        for e in edges:
+            if e.source in pos and e.target in pos:
+                key = (e.source, e.target)
+                start[key] = natural_angle(pos, e.source, e.target)
+                end[key] = natural_angle(pos, e.target, e.source)
 
-        all_edges.sort(key=_sort_key)
-        n = len(all_edges)
-        half = (n - 1) / 2.0
-        for i, (direction, edge) in enumerate(all_edges):
-            offset = (i - half) * arrow_spread_rad
-            angle = _clamp_to_arc(inward + offset, inward, arrow_arc_limit_rad)
-            if direction == "out":
-                start[edge] = angle
-            else:
-                end[edge] = angle
+        if not constrain:
+            return start, end
+
+        all_nodes = set(outgoing) | set(incoming)
+        for node in all_nodes:
+            entries: List[Tuple[float, str, Tuple[str, str]]] = []
+            for edge in outgoing.get(node, []):
+                entries.append((natural_angle(pos, edge[0], edge[1]), "out", edge))
+            for edge in incoming.get(node, []):
+                entries.append((natural_angle(pos, edge[1], edge[0]), "in", edge))
+
+            if len(entries) < 2:
+                continue
+
+            entries.sort(key=lambda x: x[0])
+            adjusted = _relax_angles([a for a, _, _ in entries], arrow_spread_rad)
+
+            for i, (_, direction, edge) in enumerate(entries):
+                if direction == "out":
+                    start[edge] = adjusted[i]
+                else:
+                    end[edge] = adjusted[i]
+
+        edge_keys = set(start.keys())
+        for key in edge_keys:
+            rev = (key[1], key[0])
+            if rev in edge_keys:
+                start[key] = natural_angle(pos, key[0], key[1])
+                end[key] = natural_angle(pos, key[1], key[0])
+                start[rev] = natural_angle(pos, key[1], key[0])
+                end[rev] = natural_angle(pos, key[0], key[1])
 
     return start, end
 
@@ -113,6 +177,7 @@ def compute_spread_angles(
 def compute_bow_signs(
     edges: list,
     pos: Dict[str, Tuple[float, float]],
+    dense: bool = True,
 ) -> Dict[Tuple[str, str], float]:
     valid = [
         (e.source, e.target) for e in edges
@@ -149,6 +214,6 @@ def compute_bow_signs(
     for k in list(signs):
         rev = (k[1], k[0])
         if rev in signs and k < rev:
-            signs[rev] = -signs[k]
+            signs[rev] = -signs[k] if dense else signs[k]
 
     return signs

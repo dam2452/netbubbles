@@ -31,28 +31,34 @@ def _bezier_ctrl(
     bow_sign: float,
     curve_strength: float,
     bg_radius: float,
-    is_bidirectional: bool,
+    dense: bool,
+    is_bidirectional: bool = False,
 ) -> Tuple[float, float]:
-    mx = (start[0] + end[0]) / 2.0
-    my = (start[1] + end[1]) / 2.0
-    # perpendicular to start→end chord (unit vector) — ctrl on this bisector = symmetric apex
-    dx, dy = end[0] - start[0], end[1] - start[1]
-    chord = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
-    px, py = -dy / chord, dx / chord
-    r1 = np.sqrt(p1[0] ** 2 + p1[1] ** 2) + 1e-9
-    r2 = np.sqrt(p2[0] ** 2 + p2[1] ** 2) + 1e-9
-    cos_angle = np.clip((p1[0] * p2[0] + p1[1] * p2[1]) / (r1 * r2), -1.0, 1.0)
-    closeness = (1.0 + cos_angle) / 2.0
-    if is_bidirectional:
-        bow_offset = bow_sign * (0.45 * closeness + 0.12) * chord
+    if not dense:
+        dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+        dist = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
+        px, py = -dy / dist, dx / dist
+        cx = (start[0] + end[0]) / 2.0 + bow_sign * px * curve_strength * dist
+        cy = (start[1] + end[1]) / 2.0 + bow_sign * py * curve_strength * dist
     else:
-        # inward pull projected onto perp-bisector direction so apex stays symmetric
-        md = np.sqrt(mx ** 2 + my ** 2) + 1e-9
-        inward_proj = (-mx / md) * px + (-my / md) * py
-        pull = curve_strength * 0.4 * closeness * chord * inward_proj
-        bow_offset = bow_sign * (0.12 * closeness + 0.04) * chord + pull
-    cx = mx + px * bow_offset
-    cy = my + py * bow_offset
+        mx = (start[0] + end[0]) / 2.0
+        my = (start[1] + end[1]) / 2.0
+        dx, dy = end[0] - start[0], end[1] - start[1]
+        chord = np.sqrt(dx ** 2 + dy ** 2) + 1e-9
+        px, py = -dy / chord, dx / chord
+        r1 = np.sqrt(p1[0] ** 2 + p1[1] ** 2) + 1e-9
+        r2 = np.sqrt(p2[0] ** 2 + p2[1] ** 2) + 1e-9
+        cos_angle = np.clip((p1[0] * p2[0] + p1[1] * p2[1]) / (r1 * r2), -1.0, 1.0)
+        closeness = (1.0 + cos_angle) / 2.0
+        if is_bidirectional:
+            bow_offset = bow_sign * (0.45 * closeness + 0.12) * chord
+        else:
+            md = np.sqrt(mx ** 2 + my ** 2) + 1e-9
+            inward_proj = (-mx / md) * px + (-my / md) * py
+            pull = curve_strength * 0.4 * closeness * chord * inward_proj
+            bow_offset = bow_sign * (0.12 * closeness + 0.04) * chord + pull
+        cx = mx + px * bow_offset
+        cy = my + py * bow_offset
     cd = np.sqrt(cx ** 2 + cy ** 2)
     if cd > bg_radius:
         cx, cy = cx * bg_radius / cd, cy * bg_radius / cd
@@ -78,12 +84,13 @@ def _compute_arrow_geometry(
     bg_radius: float,
     curve_strength: float,
     arrowhead_length: float,
-    is_bidirectional: bool,
+    dense: bool,
+    is_bidirectional: bool = False,
     ctrl_override: Optional[Tuple[float, float]] = None,
 ) -> _ArrowGeometry:
     start = (p1[0] + r_start * np.cos(start_ang), p1[1] + r_start * np.sin(start_ang))
     end = (p2[0] + r_end * np.cos(end_ang), p2[1] + r_end * np.sin(end_ang))
-    ctrl = ctrl_override if ctrl_override is not None else _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius, is_bidirectional)
+    ctrl = ctrl_override if ctrl_override is not None else _bezier_ctrl(start, end, p1, p2, bow_sign, curve_strength, bg_radius, dense, is_bidirectional)
     line_end = _line_end_before_tip(end, ctrl, arrowhead_length)
     return _ArrowGeometry(start=start, ctrl=ctrl, line_end=line_end, tip=end)
 
@@ -151,13 +158,14 @@ def draw_arrow(  # pylint: disable=too-many-arguments
     bg_radius: float,
     color: str, lw: float, alpha: float,
     style: Style,
+    dense: bool = True,
     is_bidirectional: bool = False,
     ctrl_override: Optional[Tuple[float, float]] = None,
 ) -> None:
     geom = _compute_arrow_geometry(
         p1, p2, r_start, r_end, start_ang, end_ang, bow_sign, bg_radius,
-        style.curve_strength, style.arrowhead_length, is_bidirectional,
-        ctrl_override,
+        style.curve_strength, style.arrowhead_length, dense,
+        is_bidirectional, ctrl_override,
     )
     ax.add_patch(
         mpatches.PathPatch(

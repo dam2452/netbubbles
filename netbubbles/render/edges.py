@@ -27,8 +27,26 @@ from .geometry import (
     compute_bow_signs,
     compute_spread_angles,
     inward_angle,
+    is_dense_layout,
 )
 from .nodes import node_border_half_data
+
+
+def _resolve_high_density(
+    style: Style,
+    graph: BubbleGraph,
+    pos: Dict[str, Tuple[float, float]],
+) -> bool:
+    val = style.high_density
+    if isinstance(val, bool):
+        return val
+    normalized = str(val).strip().lower()
+    if normalized in ("on", "true", "yes", "1"):
+        return True
+    if normalized in ("off", "false", "no", "0"):
+        return False
+    radii = {name: node.radius for name, node in graph.nodes.items()}
+    return is_dense_layout(pos, radii)
 
 
 def _bezier_point(
@@ -163,40 +181,44 @@ def draw_edges(
     max_w, min_w = max(weights), min(weights)
 
     regular = [e for e in top if not e.is_self_loop]
+    dense = _resolve_high_density(style, graph, pos)
+
     edge_keys = {(e.source, e.target) for e in regular}
-    bidirectional = {k for k in edge_keys if (k[1], k[0]) in edge_keys}
-    start_ang, end_ang = compute_spread_angles(regular, pos, constrain_angles, style.arrow_spread_rad, style.arrow_arc_limit_rad)
-    bow_signs = compute_bow_signs(regular, pos)
+    bidirectional = {k for k in edge_keys if (k[1], k[0]) in edge_keys} if dense else set()
+    start_ang, end_ang = compute_spread_angles(
+        regular, pos, constrain_angles,
+        style.arrow_spread_rad, style.arrow_arc_limit_rad, dense,
+    )
+    bow_signs = compute_bow_signs(regular, pos, dense)
     bg_r = _bg_radius(style, pos)
 
     ctrl_overrides: Dict[Tuple[str, str], Tuple[float, float]] = {}
-    edge_endpoints: Dict[Tuple[str, str], Tuple[Tuple[float, float], Tuple[float, float]]] = {}
-
-    for edge in regular:
-        if edge.source not in pos or edge.target not in pos:
-            continue
-        key = (edge.source, edge.target)
-        r_src = graph.nodes[edge.source].radius + (border_half if style.arrow_tail_hugs_border else 0.0)
-        r_tgt = graph.nodes[edge.target].radius + border_half
-        sa = start_ang.get(key, inward_angle(pos[edge.source]))
-        ea = end_ang.get(key, inward_angle(pos[edge.target]))
-        bow = bow_signs.get(key, 1.0)
-        p1, p2 = pos[edge.source], pos[edge.target]
-        start_pt = (p1[0] + r_src * np.cos(sa), p1[1] + r_src * np.sin(sa))
-        end_pt = (p2[0] + r_tgt * np.cos(ea), p2[1] + r_tgt * np.sin(ea))
-        ctrl = _bezier_ctrl(start_pt, end_pt, p1, p2, bow, style.curve_strength, bg_r, key in bidirectional)
-        ctrl = _adjust_ctrl_avoidance(ctrl, start_pt, end_pt, edge.source, edge.target, graph, pos)
-        ctrl_overrides[key] = ctrl
-        edge_endpoints[key] = (start_pt, end_pt)
-
-    ctrl_overrides = _adjust_ctrls_for_overlap(ctrl_overrides, edge_endpoints, bg_r)
+    if dense:
+        edge_endpoints: Dict[Tuple[str, str], Tuple[Tuple[float, float], Tuple[float, float]]] = {}
+        for edge in regular:
+            if edge.source not in pos or edge.target not in pos:
+                continue
+            key = (edge.source, edge.target)
+            r_src = graph.nodes[edge.source].radius + (border_half if style.arrow_tail_hugs_border else 0.0)
+            r_tgt = graph.nodes[edge.target].radius + border_half
+            sa = start_ang.get(key, inward_angle(pos[edge.source]))
+            ea = end_ang.get(key, inward_angle(pos[edge.target]))
+            bow = bow_signs.get(key, 1.0)
+            p1, p2 = pos[edge.source], pos[edge.target]
+            start_pt = (p1[0] + r_src * np.cos(sa), p1[1] + r_src * np.sin(sa))
+            end_pt = (p2[0] + r_tgt * np.cos(ea), p2[1] + r_tgt * np.sin(ea))
+            ctrl = _bezier_ctrl(start_pt, end_pt, p1, p2, bow, style.curve_strength, bg_r, True, key in bidirectional)
+            ctrl = _adjust_ctrl_avoidance(ctrl, start_pt, end_pt, edge.source, edge.target, graph, pos)
+            ctrl_overrides[key] = ctrl
+            edge_endpoints[key] = (start_pt, end_pt)
+        ctrl_overrides = _adjust_ctrls_for_overlap(ctrl_overrides, edge_endpoints, bg_r)
 
     for edge in reversed(top):
         if edge.source not in pos or edge.target not in pos:
             continue
         _draw_single_edge(ax, edge, graph, pos, style, border_half, bg_r,
-                          min_w, max_w, start_ang, end_ang, bow_signs, bidirectional,
-                          ctrl_overrides)
+                          min_w, max_w, start_ang, end_ang, bow_signs, dense,
+                          bidirectional, ctrl_overrides)
 
 
 def _draw_single_edge(  # pylint: disable=too-many-arguments
@@ -211,6 +233,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
     start_ang: Dict[Tuple[str, str], float],
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
+    dense: bool,
     bidirectional: Set[Tuple[str, str]],
     ctrl_overrides: Dict[Tuple[str, str], Tuple[float, float]],
 ) -> None:
@@ -225,7 +248,7 @@ def _draw_single_edge(  # pylint: disable=too-many-arguments
         key = (edge.source, edge.target)
         _draw_directed_edge(ax, edge, pos, style, r_src, r_tgt, bg_r,
                             color, lw, alpha, start_ang, end_ang, bow_signs,
-                            key in bidirectional, ctrl_overrides.get(key))
+                            dense, key in bidirectional, ctrl_overrides.get(key))
 
 
 def _draw_directed_edge(  # pylint: disable=too-many-arguments
@@ -238,6 +261,7 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     start_ang: Dict[Tuple[str, str], float],
     end_ang: Dict[Tuple[str, str], float],
     bow_signs: Dict[Tuple[str, str], float],
+    dense: bool,
     is_bidirectional: bool,
     ctrl_override: Optional[Tuple[float, float]],
 ) -> None:
@@ -247,5 +271,6 @@ def _draw_directed_edge(  # pylint: disable=too-many-arguments
     bow = bow_signs.get(key, 1.0)
     p1, p2 = pos[edge.source], pos[edge.target]
     draw_arrow(
-        ax, p1, p2, r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style, is_bidirectional, ctrl_override,
+        ax, p1, p2, r_src, r_tgt, sa, ea, bow, bg_r, color, lw, alpha, style,
+        dense, is_bidirectional, ctrl_override,
     )
